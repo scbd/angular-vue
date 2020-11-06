@@ -96,7 +96,7 @@
   };
 
   function register(ngModule) {
-    ngModule.directive('vue', [function () {
+    ngModule.directive('ngVue', [function () {
       return {
         restrict: 'A',
         terminal: true,
@@ -134,7 +134,7 @@
           }); // Create root component;
 
           var vm = new Vue__default['default']({
-            components: scope.$vueComponents,
+            components: scope.$vueComponents || {},
             data: vueData,
             methods: vueMethods
           }).$mount(element[0]); // Watch changes
@@ -170,12 +170,12 @@
       };
 
       function loadExposedProperties(attrs) {
-        var _attrs$vueExpose;
+        var _attrs$ngVueExpose;
 
         var vDirectives = /^(?:v-model|v-html|v-text|v-show|v-class|v-attr|v-style|v-if)(?:\.[a-z0-9]+)*$/i;
         var vBind = /^(?:v-bind)?:[a-z-]+(\.[a-z]+)*$/i;
         var vBindValue = /^[a-z$_][a-z0-9$_]*(\.[a-z$_][a-z0-9$_]*)*$/i;
-        var properties = ((_attrs$vueExpose = attrs.vueExpose) !== null && _attrs$vueExpose !== void 0 ? _attrs$vueExpose : '').split(',').map(function (o) {
+        var properties = ((_attrs$ngVueExpose = attrs.ngVueExpose) !== null && _attrs$ngVueExpose !== void 0 ? _attrs$ngVueExpose : '').split(',').map(function (o) {
           return o.trim();
         }).filter(function (o) {
           return vBindValue.test(o);
@@ -233,10 +233,10 @@
       }
 
       function loadExposedDelegates(attrs) {
-        var _attrs$vueExpose2;
+        var _attrs$ngngVueExpose;
 
         var ngVueDeclaredRe = /^&([a-z$_][a-z0-9$_]*)$/i;
-        var ngDelegates = ((_attrs$vueExpose2 = attrs.vueExpose) !== null && _attrs$vueExpose2 !== void 0 ? _attrs$vueExpose2 : '').split(',').map(function (o) {
+        var ngDelegates = ((_attrs$ngngVueExpose = attrs.ngngVueExpose) !== null && _attrs$ngngVueExpose !== void 0 ? _attrs$ngngVueExpose : '').split(',').map(function (o) {
           return o.trim();
         }).filter(function (o) {
           return ngVueDeclaredRe.test(o);

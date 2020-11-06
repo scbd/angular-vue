@@ -11,23 +11,23 @@ Why another angular to vue:
 
 ## How it works
 
-**angularVue** Use non interfering helper directives (`vue` & `vue-expose`) on the root of the Vue section in the angular partial/templates. 
+**angularVue** Use non interfering helper directives (`ng-vue` & `ng-vue-expose`) on the root of the Vue section in the angular partial/templates. 
 
-### The `vue` directive
+### The `ng-vue` directive
 
-When this directive attribute is present on a html element it becomes managed by Vue (becomes a vue component). At this stage, AngularJS directive, binding and interpolation is disabled and VueJs take over. You cannot use any angular directives on this element and its descendent anymore. The `vue` directive will automatically expose angular properties present in `v-bind:` and `v-on:` attributes value if they use simple format `myProps` `contact.firstName`. `vue` do not detect binding in interpolation syntax eg: `{{ contact.firstName }}` you need to declare them using `vue-expose` 
+When this directive attribute is present on a html element it becomes managed by Vue (becomes a vue component). At this stage, AngularJS directive, binding and interpolation is disabled and VueJs take over. You cannot use any angular directives on this element and its descendent anymore. The `ng-vue` directive will automatically expose angular properties present in `v-bind:` and `v-on:` attributes value if they use simple format `myProps` `contact.firstName`. `ng-vue` do not detect binding in interpolation syntax eg: `{{ contact.firstName }}` you need to declare them using `ng-vue-expose` 
 
-### The `vue-expose` attribute 
+### The `ng-vue-expose` attribute 
 
-`vue-expose` goes along with `vue`. It contains a comma separated value that list all angular properties & delegates that need to be exposed to Vue component (if cannot be detect by the simple binding). `vue-expose="myProp1,myProp2,&myDelegate"`. delegates in `vue-expose` must be prefixed by `&` (angular inspiration!);
+`ng-vue-expose` goes along with `ng-vue`. It contains a comma separated value that list all angular properties & delegates that need to be exposed to Vue component (if cannot be detect by the simple binding). `ng-vue-expose="myProp1,myProp2,&myDelegate"`. delegates in `ng-vue-expose` must be prefixed by `&` (angular inspiration!);
 
 
 ```html
 <div ng-app="app">
     <div ng-controller="MyController">
         <h1>Hello from {{ngWorld}}</h1>
-        <h1 vue vue-expose="vueWorld" >Hello from {{vueWorld}}</h1>
-        <button vue vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">click me</button>
+        <h1 vue ng-vue-expose="vueWorld" >Hello from {{vueWorld}}</h1>
+        <button vue ng-vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">click me</button>
     </div>
 </div>
 ```
@@ -146,5 +146,5 @@ $scope.contact: {
 - Delegate must be bounded as root property `@click="clicked()"`. Dot is not supported eg: ``@click="ctrl.clicked()"``
 - You cannot pass `$property` from angular-to-vue. (eg `$index` from `ngRepeat`) you have to reassign them using `ngInit`
 - Not well taking advance of the reactive framework. `.sync` modifier push value up to angular that push it back down to vue component (double trigger).   / overuse of angular `$watch`
-- `vue` directive only look at the root element to detect simple binding. Should browse the element tree 
+- `ng-vue` directive only look at the root element to detect simple binding. Should browse the element tree 
 - Require lodash!

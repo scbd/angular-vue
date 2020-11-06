@@ -24,18 +24,18 @@
             <hr>
             <h1>Vuejs</h1>
             <div ng-repeat="c in contacts">
-                <full-name vue :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
+                <full-name ng-vue :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
             </div>
 
-            <div vue vue-expose="contacts,myValue">
-                    <greeting :contact="contacts[2]"></greeting>
+            <div ng-vue ng-vue-expose="contacts,myValue">
+                    <geeting :contact="contacts[2]"></Geeting>
                     <button>{{myValue}}</button>
             </div>
             
-            <button vue vue-expose="contacts" @click="reset()" > Reset {{contacts[1].firstName}}</button>
-            <em vue vue-expose="myValue" > myValue: {{myValue}}</em>
+            <button ng-vue ng-vue-expose="contacts" @click="reset()" > Reset {{contacts[1].firstName}}</button>
+            <em ng-vue ng-vue-expose="myValue" > myValue: {{myValue}}</em>
 
-            <pre vue vue-expose="contacts" >{{contacts}}</pre>
+            <pre ng-vue ng-vue-expose="contacts" >{{contacts}}</pre>
 
            
             <hr>

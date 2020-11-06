@@ -5,7 +5,7 @@ import paths from '../libs/paths';
 export default { register };
 
 function register(ngModule) {
-  ngModule.directive('vue', [ function () {
+  ngModule.directive('ngVue', [ function () {
     return {
       restrict: 'A',
       terminal: true, // any directive with lower priority will be ignored
@@ -38,7 +38,7 @@ function register(ngModule) {
         // Create root component;
 
         const vm = new Vue({
-          components: scope.$vueComponents,
+          components: scope.$vueComponents||{},
           data      : vueData,
           methods   : vueMethods,
         }).$mount(element[0]);
@@ -77,7 +77,7 @@ function register(ngModule) {
       const vBind       = /^(?:v-bind)?:[a-z-]+(\.[a-z]+)*$/i;
       const vBindValue  = /^[a-z$_][a-z0-9$_]*(\.[a-z$_][a-z0-9$_]*)*$/i;
 
-      const properties = (attrs.vueExpose ?? '').split(',').map((o) => o.trim()).filter((o) => vBindValue.test(o));
+      const properties = (attrs.ngVueExpose ?? '').split(',').map((o) => o.trim()).filter((o) => vBindValue.test(o));
 
       // autodetect simple binding on props detect
 
@@ -137,7 +137,7 @@ function register(ngModule) {
 
     function loadExposedDelegates(attrs) {
       const ngVueDeclaredRe = /^&([a-z$_][a-z0-9$_]*)$/i;
-      const ngDelegates     = (attrs.vueExpose ?? '')
+      const ngDelegates     = (attrs.ngngVueExpose ?? '')
         .split(',')
         .map((o) => o.trim())
         .filter((o) => ngVueDeclaredRe.test(o))
