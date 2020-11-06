@@ -1,25 +1,25 @@
 # SCBD angularVue
 
-The goal of this library is to help SCBD to migrate away from AngularJS by allowing VueJs component to be use into the AngularJS world without having to chnage code afterwards. Only SCBD's needed features are implemented. If you are looking for robust implementation to mix the two platforms please look at https://github.com/ngVue/ngVue
+The goal of this library is to help SCBD to migrate away from AngularJS by allowing VueJs component to be use into the AngularJS world without having to change code afterwards. Only SCBD needed features are implemented. If you are looking for robust implementation to mix the two platforms please look at https://github.com/ngVue/ngVue
 
 Why another angular to vue:
-- Seemless / Transparent integration
-- Use natural VueJS syntaxt. (`v-bind:my-prop="..."` or `:my-prop="..."`) and event (`v-on:my-event="..."` / `@my-event="..."`) on bridged component
+- Seamless / Transparent integration
+- Use natural VueJS syntax. (`v-bind:my-prop="..."` or `:my-prop="..."`) and event (`v-on:my-event="..."` / `@my-event="..."`) on bridged component
 - Possibility to use [local registration of components](https://vuejs.org/v2/guide/components-registration.html#Local-Registration-in-a-Module-System) without having to register them globally (not need to call `Vue.component('myComponent', {...})`)
 - No need to register created a wrapper directives or use a special elements (eg: `<vue-component />`) to use vue components
-- No need to change the code of a component when angular parent component/view is migrated to VueJs...  component props/event binding remain unchnaged
+- No need to change the code of a component when angular parent component/view is migrated to VueJs...  component props/event binding remain unchanged
 
 ## How it works
 
-**angularVue** Use non interfearing helper directives (`vue` & `vue-expose`) on the root of the Vue section in the angular partial/templates. 
+**angularVue** Use non interfering helper directives (`vue` & `vue-expose`) on the root of the Vue section in the angular partial/templates. 
 
 ### The `vue` directive
 
-When this directive attribute is present on a html element it becomes managed by Vue (becomes a vue component). At this stage, AngualrJS directive, binding and interpolation is disabled and VueJs take over. You cannot use any angular directives on this element and its decendent anymore. The `vue` directive will automatically expose angular properties present in `v-bind:` and `v-on:` attributes value if they use simple format `myProps` `contact.firstName`. `vue` do not detect binding in interpolation syntax eg: `{{ contact.firstName }}` you need to declare them using `vue-expose` 
+When this directive attribute is present on a html element it becomes managed by Vue (becomes a vue component). At this stage, AngularJS directive, binding and interpolation is disabled and VueJs take over. You cannot use any angular directives on this element and its descendent anymore. The `vue` directive will automatically expose angular properties present in `v-bind:` and `v-on:` attributes value if they use simple format `myProps` `contact.firstName`. `vue` do not detect binding in interpolation syntax eg: `{{ contact.firstName }}` you need to declare them using `vue-expose` 
 
 ### The `vue-expose` attribute 
 
-`vue-expose` goes along with `vue`. It contains a comma separated value that list all angular properties & delegates that need to be exposed to Vue component (if acnnot be detect by the simple binding). `vue-expose="myProp1,myProp2,&myDelegate"`. delegates in `vue-expose` must be prefixed by `&` (angular inspiration!);
+`vue-expose` goes along with `vue`. It contains a comma separated value that list all angular properties & delegates that need to be exposed to Vue component (if cannot be detect by the simple binding). `vue-expose="myProp1,myProp2,&myDelegate"`. delegates in `vue-expose` must be prefixed by `&` (angular inspiration!);
 
 
 ```html
@@ -27,7 +27,7 @@ When this directive attribute is present on a html element it becomes managed by
     <div ng-controller="MyController">
         <h1>Hello from {{ngWorld}}</h1>
         <h1 vue vue-expose="vueWorld" >Hello from {{vueWorld}}</h1>
-        <button vue vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">clikc me</button>
+        <button vue vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">click me</button>
     </div>
 </div>
 ```
@@ -64,7 +64,7 @@ Vue.component("greeting", {
 
 $scope.contact: {
     firstName : "Stephane"
-    lastName : "bilodeau"
+    lastName : "Bilodeau"
 }
 
 ```
@@ -109,7 +109,7 @@ $scope.contact: {
 }
 ```
 
-But you can make props two-way binding usinf props `.sync` modifiers and eamiting the good `update:prop` event.
+But you can make props two-way binding using props `.sync` modifiers and emitting the good `update:prop` event.
 
 ```html
 <!-- only first-name wil be two-way bound -->
@@ -143,8 +143,8 @@ $scope.contact: {
 
 **MANY MANY MANY**
 
-- Delegate must be bounded as root property `@click="clicked()"`. Dot is not supperted eg: ``@click="ctrl.clicked()"``
-- You cannot pass `$property` from angular-to-vue. (eg `$index` from `ngRepate`) you have to reassign thenm using `ngInit`
-- Not well taking advangte of the reactive framework. `.sync` modifier push value up to angular that push it back down to vue componet (double trigger).   / overuse of angular `$watch`
+- Delegate must be bounded as root property `@click="clicked()"`. Dot is not supported eg: ``@click="ctrl.clicked()"``
+- You cannot pass `$property` from angular-to-vue. (eg `$index` from `ngRepeat`) you have to reassign them using `ngInit`
+- Not well taking advance of the reactive framework. `.sync` modifier push value up to angular that push it back down to vue component (double trigger).   / overuse of angular `$watch`
 - `vue` directive only look at the root element to detect simple binding. Should browse the element tree 
 - Require lodash!
