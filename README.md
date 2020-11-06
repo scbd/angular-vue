@@ -9,6 +9,8 @@ Why another angular to vue:
 - No need to register created a wrapper directives or use a special elements (eg: `<vue-component />`) to use vue components
 - No need to change the code of a component when angular parent component/view is migrated to VueJs...  component props/event binding remain unchanged
 
+*This documentation is incomplete*
+
 ## How it works
 
 **angularVue** Use non interfering helper directives (`ng-vue` & `ng-vue-expose`) on the root of the Vue section in the angular partial/templates. 
@@ -26,8 +28,8 @@ When this directive attribute is present on a html element it becomes managed by
 <div ng-app="app">
     <div ng-controller="MyController">
         <h1>Hello from {{ngWorld}}</h1>
-        <h1 vue ng-vue-expose="vueWorld" >Hello from {{vueWorld}}</h1>
-        <button vue ng-vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">click me</button>
+        <h1 ng-vue ng-vue-expose="vueWorld" >Hello from {{vueWorld}}</h1>
+        <button ng-vue ng-vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">click me</button>
     </div>
 </div>
 ```
@@ -45,7 +47,7 @@ const app = angular.module('app', ['angularVue'])
 
 Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-html`, `v-text`, `v-show`, `v-class`, `v-attr`, `v-style`, `v-if`. 
 ```html
-    <h1 vue v-text="vueWorld" :></h1>
+    <h1 ng-vue v-text="vueWorld" :></h1>
 ```
 
 
@@ -54,7 +56,7 @@ Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-
 You can register a component globally 
 
 ```html
-<greeting vue :contact="contact"></greeting>
+<greeting ng-vue :contact="contact"></greeting>
 ```
 ```javascript
 Vue.component("greeting", {
@@ -72,7 +74,7 @@ $scope.contact: {
 Or locally using `$vueComponent`
 
 ```html
-<hello vue :contact="contact"></greeting>
+<hello ng-vue :contact="contact"></greeting>
 ```
 ```javascript
 // Local component
@@ -90,10 +92,10 @@ $scope.contact: {
 
 ## Props
 
-You can pass angualr variable to vue components using `props`. Like on Vue `props` are one-way binding
+You can pass angular variable to ng-vue components using `props`. Like on Vue `props` are one-way binding
 
 ```html
-<hello vue :first-name="contact.firstName", :last-name="contact.lastName"></greeting>
+<hello ng-vue :first-name="contact.firstName", :last-name="contact.lastName"></greeting>
 ```
 ```javascript
 // Local component
@@ -114,7 +116,7 @@ But you can make props two-way binding using props `.sync` modifiers and emittin
 ```html
 <!-- only first-name wil be two-way bound -->
 
-<hello vue :first-name.sync="contact.firstName", :last-name="contact.firstName"></greeting>
+<hello ng-vue :first-name.sync="contact.firstName", :last-name="contact.firstName"></greeting>
 ```
 ```javascript
 // Local component
