@@ -24,4 +24,4 @@ app_build
 
 .bower-storage
 .vscode
-package-lock.json
+dist

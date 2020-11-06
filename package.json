@@ -2,7 +2,7 @@
   "name": "@scbd/angular-vue",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index_bundle.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "npx rollup -c",
     "dev": "npx rollup -c --watch",
