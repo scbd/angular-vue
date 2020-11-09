@@ -38,7 +38,7 @@ function register(ngModule) {
         // Create root component;
 
         const vm = new Vue({
-          components: scope.$vueComponents||{},
+          components: scope.$vueComponents || {},
           data      : vueData,
           methods   : vueMethods,
         }).$mount(element[0]);

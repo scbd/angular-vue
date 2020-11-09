@@ -1,5 +1,6 @@
 // rollup.config.js (building more than one bundle)
 import { terser } from 'rollup-plugin-terser';
+import { eslint } from "rollup-plugin-eslint";
 import babel from '@rollup/plugin-babel';
 
 const globals = {
@@ -7,6 +8,14 @@ const globals = {
   angular: 'angular',
   Vue    : 'Vue',
 };
+
+const plugins = []
+
+if(process.env.ROLLUP_WATCH=='true') {
+  plugins.push(eslint({ fix: true })) // eslint --fix in dev/watch mode
+}
+
+plugins.push(babel({ babelHelpers: 'bundled' })) // use babel
 
 const outputOptions = {
   format   : 'umd',
@@ -25,7 +34,5 @@ export default [{
     plugins: [ terser() ],
   }],
   external: [ ...Object.keys(globals) ],
-  plugins : [
-    babel({ babelHelpers: 'bundled' }),
-  ],
+  plugins : [ ...plugins],
 }];
