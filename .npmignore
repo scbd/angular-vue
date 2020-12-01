@@ -28,3 +28,10 @@ app_build
 
 .bower-storage
 .vscode
+
+.babelrc
+.eslintignore
+.eslintrc.json
+.github
+.package-lock.json
+rollup.config.js
