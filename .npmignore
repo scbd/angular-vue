@@ -35,3 +35,4 @@ app_build
 .github
 .package-lock.json
 rollup.config.js
+src
