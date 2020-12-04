@@ -25,7 +25,7 @@
             <h1>Vuejs</h1>
             <div ng-repeat="c in contacts">
                 <full-name ng-vue :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
-                <full-name ng-vue ng-vue-options="{ components: localComponents }" :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
+                <full-name ng-vue="{ components: localComponents }" :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
             </div>
 
             <div ng-vue ng-vue-expose="contacts,myValue">

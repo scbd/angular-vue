@@ -53,12 +53,15 @@ Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-
 
 ## Vue Options 
 
-`ngVueOptions` must be object where key/value will be assigned on *Vue host wrapper* component. It allows user to pass additional parameters to the component definition object. Eg: you can use `ngVueOptions` to passe locally registered components to the vue host 
+You can pass *Vue host wrapper* component options ot the `ngVue` attribute. Options must be object where key/value will be assigned on *Vue host wrapper*. It allows user to pass additional parameters to the component definition object of the Vue host. Eg: you can use `ngVue` to passe locally registered components to the vue host 
+
+```html
+<hello ng-vue="{ components : myVueLocallyDefinedComponents }"></hello>
+```
 
 ```javascript
-ngVueOptions = { 
- components : { hello : MyHelloComponent }
-}
+myVueLocallyDefinedComponents = { hello : MyHelloComponent };
+```
 
 Following properties are blacklisted:
 
@@ -68,7 +71,7 @@ Following properties are blacklisted:
 - methods
 - watch
 
-All lifecycle hooks are not handled/tested yet :
+Lifecycle hooks can be passed but the behaviour is tested yet (no angularjs $apply()/$digest()):
 
 - beforeCreate
 - created
@@ -100,10 +103,10 @@ $scope.contact: {
 
 ```
 
-Or locally using `ngVueOptions.components`
+Or locally using `ngVue` `.components`
 
 ```html
-<hello ng-vue :contact="contact" ng-vue-options="vueOptions"></hello>
+<hello ng-vue="{ components : myLocalComponents }" :contact="contact"></hello>
 ```
 ```javascript
 // Local component
@@ -112,7 +115,8 @@ const hello : Vue.extend({
     template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!<b>`
 })
 
-$scope.vueOptions = { components : { hello }}
+$scope.myLocalComponents = { components : { hello }}
+
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"
