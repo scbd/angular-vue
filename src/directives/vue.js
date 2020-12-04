@@ -38,14 +38,13 @@ function register(ngModule) {
         // Create root component;
         let options = {};
 
-        if(attrs.ngVueOptions)
-            options = scope.$eval(attrs.ngVueOptions) || {};
+        if (attrs.ngVueOptions) options = scope.$eval(attrs.ngVueOptions) || {};
         options = _.omit(options, 'props', 'data', 'computed', 'methods', 'watch');
 
         const vm = new Vue({
           ...options,
-          data      : vueData,
-          methods   : vueMethods,
+          data   : vueData,
+          methods: vueMethods,
         }).$mount(element[0]);
 
         // Watch changes
