@@ -40,7 +40,8 @@ function register(ngModule) {
 
         if(attrs.ngVueOptions)
             options = scope.$eval(attrs.ngVueOptions) || {};
-        
+        options = _.omit(options, 'props', 'data', 'computed', 'methods', 'watch');
+
         const vm = new Vue({
           ...options,
           data      : vueData,
