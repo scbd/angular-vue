@@ -38,7 +38,7 @@ function register(ngModule) {
         // Create root component;
         let options = {};
 
-        if (attrs.ngVueOptions) options = scope.$eval(attrs.ngVueOptions) || {};
+        if (attrs.ngVue) options = scope.$eval(attrs.ngVue) || {};
         options = _.omit(options, 'props', 'data', 'computed', 'methods', 'watch');
 
         const vm = new Vue({
