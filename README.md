@@ -53,7 +53,36 @@ Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-
 
 ## Vue Options 
 
-You can pass all available vue options (https://vuejs.org/v2/api/#Options-Data) in **ng-vue-options**. for eg. to register a component globally 
+`ngVueOptions` must be object where key/value will be assigned on *Vue host wrapper* component. It allows user to pass additional parameters to the component definition object. Eg: you can use `ngVueOptions` to passe locally registered components to the vue host 
+
+```javascript
+ngVueOptions = { 
+ components : { hello : MyHelloComponent }
+}
+
+Following properties are blacklisted:
+
+- props
+- data
+- computed
+- methods
+- watch
+
+All lifecycle hooks are not handled/tested yet :
+
+- beforeCreate
+- created
+- beforeMount
+- mounted
+- beforeUpdate
+- updated
+- beforeDestroy
+- destroyed
+   
+
+## Component registation
+
+ You can register a component globally 
 
 ```html
 <greeting ng-vue :contact="contact"></greeting>
@@ -71,7 +100,7 @@ $scope.contact: {
 
 ```
 
-Or locally using `ngVueOptions`
+Or locally using `ngVueOptions.components`
 
 ```html
 <hello ng-vue :contact="contact" ng-vue-options="vueOptions"></hello>
