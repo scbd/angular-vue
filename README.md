@@ -51,9 +51,41 @@ Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-
 ```
 
 
-## Components 
+## Vue Options 
 
-You can register a component globally 
+You can pass *Vue host wrapper* component options ot the `ngVue` attribute. Options must be object where key/value will be assigned on *Vue host wrapper*. It allows user to pass additional parameters to the component definition object of the Vue host. Eg: you can use `ngVue` to passe locally registered components to the vue host 
+
+```html
+<hello ng-vue="{ components : myVueLocallyDefinedComponents }"></hello>
+```
+
+```javascript
+myVueLocallyDefinedComponents = { hello : MyHelloComponent };
+```
+
+Following properties are blacklisted:
+
+- props
+- data
+- computed
+- methods
+- watch
+
+Lifecycle hooks can be passed but the behaviour is tested yet (no angularjs $apply()/$digest()):
+
+- beforeCreate
+- created
+- beforeMount
+- mounted
+- beforeUpdate
+- updated
+- beforeDestroy
+- destroyed
+   
+
+## Component registation
+
+ You can register a component globally 
 
 ```html
 <greeting ng-vue :contact="contact"></greeting>
@@ -71,10 +103,10 @@ $scope.contact: {
 
 ```
 
-Or locally using `$vueComponent`
+Or locally using `ngVue` `.components`
 
 ```html
-<hello ng-vue :contact="contact"></greeting>
+<hello ng-vue="{ components : myLocalComponents }" :contact="contact"></hello>
 ```
 ```javascript
 // Local component
@@ -83,7 +115,8 @@ const hello : Vue.extend({
     template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!<b>`
 })
 
-$scope.$vueComponents= { hello }
+$scope.myLocalComponents = { components : { hello }}
+
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"
@@ -95,7 +128,7 @@ $scope.contact: {
 You can pass angular variable to ng-vue components using `props`. Like on Vue `props` are one-way binding
 
 ```html
-<hello ng-vue :first-name="contact.firstName", :last-name="contact.lastName"></greeting>
+<hello ng-vue :first-name="contact.firstName", :last-name="contact.lastName" ng-vue-options="vueOptions"></hello>
 ```
 ```javascript
 // Local component
@@ -104,7 +137,7 @@ const hello : Vue.extend({
     template: `<b> Hello {{firstName}} {{lastName}}!!<b>`
 })
 
-$scope.$vueComponents= { hello }
+$scope.vueOptions= { components : { hello }}
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"
@@ -116,7 +149,7 @@ But you can make props two-way binding using props `.sync` modifiers and emittin
 ```html
 <!-- only first-name wil be two-way bound -->
 
-<hello ng-vue :first-name.sync="contact.firstName", :last-name="contact.firstName"></greeting>
+<hello ng-vue :first-name.sync="contact.firstName", :last-name="contact.firstName" ng-vue-options="vueOptions"></hello>
 ```
 ```javascript
 // Local component
@@ -133,7 +166,7 @@ const hello : Vue.extend({
     </div>`
 })
 
-$scope.$vueComponents= { hello }
+$scope.vueOptions = { components : { hello }}
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"
