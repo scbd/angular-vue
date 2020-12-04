@@ -51,9 +51,9 @@ Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-
 ```
 
 
-## Components 
+## Vue Options 
 
-You can register a component globally 
+You can pass all available vue options (https://vuejs.org/v2/api/#Options-Data) in **ng-vue-options**. for eg. to register a component globally 
 
 ```html
 <greeting ng-vue :contact="contact"></greeting>
@@ -71,10 +71,10 @@ $scope.contact: {
 
 ```
 
-Or locally using `$vueComponent`
+Or locally using `ngVueOptions`
 
 ```html
-<hello ng-vue :contact="contact"></greeting>
+<hello ng-vue :contact="contact" ng-vue-options="vueOptions"></hello>
 ```
 ```javascript
 // Local component
@@ -83,7 +83,7 @@ const hello : Vue.extend({
     template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!<b>`
 })
 
-$scope.$vueComponents= { hello }
+$scope.vueOptions = { components : { hello }}
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"
@@ -95,7 +95,7 @@ $scope.contact: {
 You can pass angular variable to ng-vue components using `props`. Like on Vue `props` are one-way binding
 
 ```html
-<hello ng-vue :first-name="contact.firstName", :last-name="contact.lastName"></greeting>
+<hello ng-vue :first-name="contact.firstName", :last-name="contact.lastName" ng-vue-options="vueOptions"></hello>
 ```
 ```javascript
 // Local component
@@ -104,7 +104,7 @@ const hello : Vue.extend({
     template: `<b> Hello {{firstName}} {{lastName}}!!<b>`
 })
 
-$scope.$vueComponents= { hello }
+$scope.vueOptions= { components : { hello }}
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"
@@ -116,7 +116,7 @@ But you can make props two-way binding using props `.sync` modifiers and emittin
 ```html
 <!-- only first-name wil be two-way bound -->
 
-<hello ng-vue :first-name.sync="contact.firstName", :last-name="contact.firstName"></greeting>
+<hello ng-vue :first-name.sync="contact.firstName", :last-name="contact.firstName" ng-vue-options="vueOptions"></hello>
 ```
 ```javascript
 // Local component
@@ -133,7 +133,7 @@ const hello : Vue.extend({
     </div>`
 })
 
-$scope.$vueComponents= { hello }
+$scope.vueOptions = { components : { hello }}
 $scope.contact: {
     firstName : "Stephane"
     lastName : "Bilodeau"

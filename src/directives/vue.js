@@ -36,9 +36,13 @@ function register(ngModule) {
         });
 
         // Create root component;
+        let options = {};
 
+        if(attrs.ngVueOptions)
+            options = scope.$eval(attrs.ngVueOptions) || {};
+        
         const vm = new Vue({
-          components: scope.$vueComponents||{},
+          ...options,
           data      : vueData,
           methods   : vueMethods,
         }).$mount(element[0]);
