@@ -71,7 +71,7 @@ Following properties are blacklisted:
 - methods
 - watch
 
-Lifecycle hooks can be passed but the behaviour is tested yet (no angularjs $apply()/$digest()):
+Lifecycle hooks can be passed but the behaviour is not tested yet (no angularjs $apply()/$digest()):
 
 - beforeCreate
 - created
