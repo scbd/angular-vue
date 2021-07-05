@@ -28,18 +28,20 @@ function register(ngModule) {
           vueData[vueProp] = scope.$eval(ngProp); // set initial value
         });
 
+                // Create root component;
+        let options = {};
+
+        if (attrs.ngVue) options = scope.$eval(attrs.ngVue) || {};
+        options = _.omit(options, 'props', 'data', 'computed', 'methods', 'watch')
+
         ngDelegates.forEach((ngDelegate) => {
           vueMethods[ngDelegate] = (...args) => {
-            console.log(`Calling ng delegate: ${ngDelegate}()`);
+            if(options.verbose) console.log(`Calling ng delegate: ${ngDelegate}()`);
             scope.$apply(() => scope.$eval(ngDelegate).apply(scope, args));
           };
         });
 
-        // Create root component;
-        let options = {};
-
-        if (attrs.ngVue) options = scope.$eval(attrs.ngVue) || {};
-        options = _.omit(options, 'props', 'data', 'computed', 'methods', 'watch');
+;
 
         const vm = new Vue({
           ...options,
@@ -53,7 +55,7 @@ function register(ngModule) {
           const vueProp = ngProp;
 
           scope.$watch(ngProp, (value) => {
-            console.log(`ng(${ngProp}) => vue(${vueProp}) =`, value);
+            if(options.verbose) console.log(`ng(${ngProp}) => vue(${vueProp}) =`, value);
 
             let target = vm;
             let prop   = vueProp;
@@ -69,7 +71,7 @@ function register(ngModule) {
 
         _.forEach(syncedPropertiesMapping, (ngProp, vueProp) => { // .sync
           vm.$children.forEach((c) => c.$on(`update:${vueProp}`, (value) => {
-            console.log(`vue(${vueProp}) => ng(${ngProp}) =`, value);
+            if(options.verbose) console.log(`vue(${vueProp}) => ng(${ngProp}) =`, value);
             scope.$apply(() => _.set(scope, ngProp, value));
           }));
         });
