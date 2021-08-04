@@ -70,7 +70,7 @@ function register(ngModule) {
         });
 
         _.forEach(syncedPropertiesMapping, (ngProp, vueProp) => { // .sync
-          vm.$children.forEach((c) => c.$on(`update:${vueProp}`, (value) => {
+          vm.$children.forEach((c) => c.$on(`update:${_.kebabCase(vueProp)}`, (value) => {
             if(options.verbose) console.log(`vue(${vueProp}) => ng(${ngProp}) =`, value);
             scope.$apply(() => _.set(scope, ngProp, value));
           }));
