@@ -50,8 +50,8 @@
                 'lastName'
             ],
             computed: {
-                fn: { get() { return this.firstName}, set(v) { this.$emit("update:firstName", v) }  },
-                ln: { get() { return this.lastName }, set(v) { this.$emit("update:lastName", v) }  }
+                fn: { get() { return this.firstName}, set(v) { this.$emit("update:first-name", v) }  },
+                ln: { get() { return this.lastName }, set(v) { this.$emit("update:last-name", v) }  }
             },
             template: `<div> 
                 <label>firstName:</label> <input v-model="fn"> {{fn}}<br>
