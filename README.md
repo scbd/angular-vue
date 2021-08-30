@@ -174,6 +174,28 @@ $scope.contact: {
 ```
 
 
+## Plugins
+
+Since the objective of the library is help run VueJS in a `hybrid` mode lot of VueJS features may not be available for eg. `vueRouter`, to overcome that plugins were introduced so that certain features from AngularJS can be sent to VueJS in object form to be further used in vue components. The intention of plugin is to create wrapper object of the features currently not available in vue due to the hybrid limitation for eg, create wrapper object of `router` so that if the component is moved to pure VueJS project minimal changes will be required for the switch. In situation where the wrapper object is not required plain angularJs objects can be passed using the `angular-vue-plain-plugin`
+
+# example usage
+```
+app.run(["realm", "locale", '$injector', function (realm, locale, $injector) {
+
+  registerVuePlugin('$realm', realm);
+  registerVuePlugin('$locale', locale);
+
+  window.Vue.use(new AngularVueRoutePlugin ($injector));
+  window.Vue.use(new AngularVueRouterPlugin($injector));
+
+}]);
+
+function registerVuePlugin(name, service){
+  const newPlugin = new CreateAngularVuePlug(name, service)
+  window.Vue.use(newPlugin);
+}
+```
+
 # Know problems
 
 **MANY MANY MANY**

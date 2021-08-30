@@ -143,7 +143,7 @@ function register(ngModule) {
 
     function loadExposedDelegates(attrs) {
       const ngVueDeclaredRe = /^&([a-z$_][a-z0-9$_]*)$/i;
-      const ngDelegates     = (attrs.ngngVueExpose ?? '')
+      const ngDelegates     = (attrs.ngVueExpose ?? '')
         .split(',')
         .map((o) => o.trim())
         .filter((o) => ngVueDeclaredRe.test(o))

@@ -28,4 +28,21 @@ export default [{
   plugins : [
     babel({ babelHelpers: 'bundled' }),
   ],
+},
+{
+  input : './src/plugins/index.js',
+  output: [{
+    ...outputOptions,
+    file: 'dist/angular-vue-plugins.js',
+    name:'angular-vue-plugins'
+  }, {
+    ...outputOptions,
+    file   : 'dist//angular-vue-plugins.min.js',
+    name:'angular-vue-plugins-min',
+    plugins: [ terser() ],
+  }],
+  external: [ ...Object.keys(globals) ],
+  plugins : [
+    babel({ babelHelpers: 'bundled' }),
+  ],
 }];
