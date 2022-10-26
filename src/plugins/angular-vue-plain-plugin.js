@@ -1,5 +1,5 @@
 
-export const CreateAngularVuePlainPlugin = (ngServiceName, ngService) =>{
+export default function CreateAngularVuePlainPlugin(ngServiceName, ngService) {
 
     return {
         // called by Vue.use(CreateAngularVuePlainPlugin)
@@ -8,4 +8,4 @@ export const CreateAngularVuePlainPlugin = (ngServiceName, ngService) =>{
                 Vue.prototype[ngServiceName] = ngService;
         }
       }
-};
+}

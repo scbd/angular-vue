@@ -1,9 +1,9 @@
 // rollup.config.js (building more than one bundle)
-import { terser } from 'rollup-plugin-terser';
-import babel from '@rollup/plugin-babel';
+import commonjs from '@rollup/plugin-commonjs';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import { getBabelOutputPlugin } from '@rollup/plugin-babel';
 
 const globals = {
-  lodash : '_',
   angular: 'angular',
   Vue    : 'Vue',
 };
@@ -14,19 +14,22 @@ const outputOptions = {
   globals,
 };
 
+const babel = () => getBabelOutputPlugin({
+  presets: [['@babel/preset-env', { targets: "> 0.25%, not dead"}]],
+  allowAllFormats: true,
+})
+
 export default [{
   input : './src/index.js',
   output: [{
     ...outputOptions,
     file: 'dist/angular-vue.js',
-  }, {
-    ...outputOptions,
-    file   : 'dist/angular-vue.min.js',
-    plugins: [ terser() ],
   }],
   external: [ ...Object.keys(globals) ],
   plugins : [
-    babel({ babelHelpers: 'bundled' }),
+    nodeResolve(),
+    commonjs(),
+    babel(),
   ],
 },
 {
@@ -34,15 +37,12 @@ export default [{
   output: [{
     ...outputOptions,
     file: 'dist/angular-vue-plugins.js',
-    name:'angular-vue-plugins'
-  }, {
-    ...outputOptions,
-    file   : 'dist//angular-vue-plugins.min.js',
-    name:'angular-vue-plugins-min',
-    plugins: [ terser() ],
+    name:'AngularVuePlugins'
   }],
   external: [ ...Object.keys(globals) ],
   plugins : [
-    babel({ babelHelpers: 'bundled' }),
+    nodeResolve(),
+    commonjs(),
+    babel(),
   ],
 }];

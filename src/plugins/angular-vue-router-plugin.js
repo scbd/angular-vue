@@ -1,4 +1,4 @@
-export const AngularVueRouterPlugin = ($injector) =>{
+export default function AngularVueRouterPlugin($injector) {
 
     if(!$injector)
         throw new Error('Angular $injector not provided, cannot use AngularVueRouterPlugin plugin');
@@ -37,4 +37,4 @@ export const AngularVueRouterPlugin = ($injector) =>{
                 Vue.prototype.$router = router;
         }
       }
-};
+}
