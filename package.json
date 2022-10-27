@@ -14,7 +14,13 @@
     "type": "git",
     "url": "git+https://github.com/scbd/angular-vue.git"
   },
-  "keywords": [],
+  "files": [
+    "dist/*",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": ["vue", "angularjs", "angular"],
   "author": "",
   "license": "MIT",
   "bugs": {
