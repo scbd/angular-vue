@@ -1,48 +1,51 @@
-// rollup.config.js (building more than one bundle)
 import commonjs from '@rollup/plugin-commonjs';
+import { terser } from 'rollup-plugin-terser'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { getBabelOutputPlugin } from '@rollup/plugin-babel';
-
-const globals = {
-  angular: 'angular',
-  Vue    : 'Vue',
-};
-
-const outputOptions = {
-  format   : 'umd',
-  sourcemap: true,
-  globals,
-};
 
 const babel = () => getBabelOutputPlugin({
   presets: [['@babel/preset-env', { targets: "> 0.25%, not dead"}]],
   allowAllFormats: true,
 })
 
-export default [{
-  input : './src/index.js',
-  output: [{
-    ...outputOptions,
-    file: 'dist/angular-vue.js',
-  }],
-  external: [ ...Object.keys(globals) ],
-  plugins : [
-    nodeResolve(),
-    commonjs(),
-    babel(),
-  ],
-},
-{
-  input : './src/plugins/index.js',
-  output: [{
-    ...outputOptions,
-    file: 'dist/angular-vue-plugins.js',
-    name:'AngularVuePlugins'
-  }],
-  external: [ ...Object.keys(globals) ],
-  plugins : [
-    nodeResolve(),
-    commonjs(),
-    babel(),
-  ],
-}];
+const globals = {
+  angular: 'angular',
+  Vue    : 'Vue',
+};
+
+export default [
+  bundle('src/index.js',         'dist/angular-vue.js',         'AngularVue'),
+  bundle('src/plugins/index.js', 'dist/angular-vue-plugins.js', 'AngularVuePlugins'),
+
+  bundle('src/directives/vue.js',                    'dist/directives/ng-vue.js',            'AngularVueDirective'),
+  bundle('src/components/angular-vue.js',            'dist/components/ng-vue.js',            'AngularVueComponent'),
+  bundle('src/plugins/angular-vue-plugin.js',        'dist/plugins/ng-vue-plugin.js',        'AngularVuePlugin'),
+  bundle('src/plugins/angular-vue-plain-plugin.js',  'dist/plugins/ng-vue-plain-plugin.js',  'AngularVuePlainPlugin'),
+  bundle('src/plugins/angular-vue-route-plugin.js',  'dist/plugins/ng-vue-route-plugin.js',  'AngularVueRoutePlugin'),
+  bundle('src/plugins/angular-vue-router-plugin.js', 'dist/plugins/ng-vue-router-plugin.js', 'AngularVueRouterPlugin'),
+];
+
+function bundle(inFile, outFile, name) {
+
+  const outputOptions = {
+    format   : 'umd',
+    sourcemap: true,
+    name,
+    globals,
+  };
+
+  return {
+    input : inFile,
+    output: [
+      { ...outputOptions, file: outFile },
+      { ...outputOptions, file: outFile.replace(/\.js$/, '.min.js'), plugins: [ terser() ] },
+    ],
+    external: [ ...Object.keys(globals) ],
+    plugins : [
+      nodeResolve(),
+      commonjs(),
+      babel(),
+    ],
+  }
+
+}

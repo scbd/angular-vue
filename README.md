@@ -209,7 +209,6 @@ function registerVuePlugin(name, service){
 - You cannot pass `$property` from angular-to-vue. (eg `$index` from `ngRepeat`) you have to reassign them using `ngInit`
 - Not well taking advantage of the reactive framework. `.sync` modifier push value up to angular that push it back down to vue component (double trigger).   / overuse of angular `$watch`
 - `ng-vue` directive only look at the root element to detect simple binding. Should browse the element tree 
-- Require lodash!
 
 # Using AngularJS into Vue
 
