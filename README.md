@@ -2,6 +2,11 @@
 
 The goal of this library is to help SCBD to migrate away from AngularJS by allowing VueJs component to be use into the AngularJS world without having to change code afterwards. Only SCBD needed features are implemented. If you are looking for robust implementation to mix the two platforms please look at https://github.com/ngVue/ngVue
 
+* [Using Vue into AngularJS](#using-vue-into-angularjs)
+* [Using AngularJS into Vue](#using-angularjs-into-vue) **New!** 
+
+# Using Vue into AngularJS
+
 Why another angular to vue:
 - Seamless / Transparent integration
 - Use natural VueJS syntax. (`v-bind:my-prop="..."` or `:my-prop="..."`) and event (`v-on:my-event="..."` / `@my-event="..."`) on bridged component
@@ -71,7 +76,7 @@ Following properties are blacklisted:
 - methods
 - watch
 
-Lifecycle hooks can be passed but the behaviour is not tested yet (no angularjs $apply()/$digest()):
+Lifecycle hooks can be passed but the behavior is not tested yet (no angularjs $apply()/$digest()):
 
 - beforeCreate
 - created
@@ -204,4 +209,103 @@ function registerVuePlugin(name, service){
 - You cannot pass `$property` from angular-to-vue. (eg `$index` from `ngRepeat`) you have to reassign them using `ngInit`
 - Not well taking advantage of the reactive framework. `.sync` modifier push value up to angular that push it back down to vue component (double trigger).   / overuse of angular `$watch`
 - `ng-vue` directive only look at the root element to detect simple binding. Should browse the element tree 
-- Require lodash!
+
+# Using AngularJS into Vue
+
+## The `<vue-ng />` angular code component wrapper 
+
+The `vue-ng` component is wrapped around html to allow usage of angular stuff into vue world (the reverse the `vue-ng` angular directive above). The goal is to reuse already developed angular component into vue without having to re-code everything into vue once passed from AngularJs to Vue
+
+### Setup
+
+Angular vue special plugins is required to be used. The plugin require *runtime* agularjs `$injector` instance to work.
+
+```javascript
+const vueApp =  new Vue({}); // Vue app root!;
+const ngApp  =  angular.module("app",[...])
+
+ngApp.run(['$injector', function($injector){
+    Vue.use(new AngularVuePlugin({ 
+        $injector, // mandatory
+        ngApp,     // optional, for future use
+        vueApp     // optional, allow vue inside angular to have parent component set!
+    }), 
+    { //install options
+        vueNgName:  null // optional, define component name global registered. Default: `VueNg`;
+    });
+}]);
+
+vueApp.$mount('#app');
+angular.bootstrap(document, [ngApp.name]);   
+
+```
+
+### Usage
+
+To inject angular code into vue app, you simply need to use the special `ng-vue` component that will use angular to run the html contained inside the `vue-ng` component `default` slot html. Angular html portion should use `v-pre` directive to tell `Vue` to keep the html as is (preformatted html). you only have to declare all prop you want to expose to angular.
+
+```html  
+This code run in Vue. my name from Vue: {{name}}
+<vue-ng :name="name">
+    <div v-pre>
+        this code run in angular!
+        My name passed to Angular {{name}}
+    </div>
+</vue-ng>
+
+```
+
+You can also renamed props exposed to angular
+
+```html  
+My name from Vue is stored in myNameInVue = {{myNameInVue}}
+<vue-ng :my-name-in-angular="myNameInVue">
+    <div v-pre>
+        My name passed to Angular in myNameInAngular = {{myNameInAngular}}
+    </div>
+</vue-ng>
+
+```
+
+
+Or do two-way binding
+
+```html  
+My name from Vue is stored in myNameInVue = {{myNameInVue}}
+<vue-ng :my-name-in-angular.sync="myNameInVue">
+    <div v-pre>
+       Type your name from Angular in myNameInAngular = <input ng-model="myNameInAngular"><br>
+       Your name {{myNameInAngular}} will be sync back to Vue parent `myNameInVue` prop.
+
+    </div>
+</vue-ng>
+
+```
+
+
+Of course you can mix and match `vue-ng` & `ng-vue`
+
+```html  
+My name from Vue is: {{name}}
+<vue-ng :name="name">
+    <div v-pre>
+
+        My name from Angular (inside vue) is: {{name}}
+
+        <div ng-vue ng-view-expose="name">
+
+           My name from Vue (inside Angular (inside Vue)) is: {{name}}
+
+           <vue-ng :name="name">
+               <div v-pre>
+                   My name from Angular (inside Vue (inside Angular (inside Vue))) is: {{name}}
+                   ...
+               </div>
+           </vue-ng>
+
+        </div>
+
+    </div>
+</vue-ng>
+
+```
