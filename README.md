@@ -212,9 +212,9 @@ function registerVuePlugin(name, service){
 
 # Using AngularJS into Vue
 
-## The `<ng-vue />` angular code component wrapper 
+## The `<vue-ng />` angular code component wrapper 
 
-This component `ng-vue` wrapped around html allow usage of angular stuff into vue world (the reverse the `ng-vue` angular directive above). The goal is to reuse already developed angular component into vue without having to re-code everything into vue once passed from AngularJs to Vue
+The `vue-ng` component is wrapped around html to allow usage of angular stuff into vue world (the reverse the `vue-ng` angular directive above). The goal is to reuse already developed angular component into vue without having to re-code everything into vue once passed from AngularJs to Vue
 
 ### Setup
 
@@ -227,9 +227,12 @@ const ngApp  =  angular.module("app",[...])
 ngApp.run(['$injector', function($injector){
     Vue.use(new AngularVuePlugin({ 
         $injector, // mandatory
-        ngApp,     // optional for future use
+        ngApp,     // optional, for future use
         vueApp     // optional, allow vue inside angular to have parent component set!
-    }));
+    }), 
+    { //install options
+        vueNgName:  null // optional, define component name global registered. Default: `VueNg`;
+    });
 }]);
 
 vueApp.$mount('#app');
@@ -239,16 +242,16 @@ angular.bootstrap(document, [ngApp.name]);
 
 ### Usage
 
-To inject angular code into vue app, you simply need to use the special `ng-vue` component that will use angular to run the html contained inside the `ng-vue` component `default` slot html. Angular html portion should use `v-pre` directive to tell `Vue` to keep the html as is (preformatted html). you only have to declare all prop you want to expose to angular.
+To inject angular code into vue app, you simply need to use the special `ng-vue` component that will use angular to run the html contained inside the `vue-ng` component `default` slot html. Angular html portion should use `v-pre` directive to tell `Vue` to keep the html as is (preformatted html). you only have to declare all prop you want to expose to angular.
 
 ```html  
 This code run in Vue. my name from Vue: {{name}}
-<ng-vue :name="name">
+<vue-ng :name="name">
     <div v-pre>
         this code run in angular!
         My name passed to Angular {{name}}
     </div>
-</ng-vue>
+</vue-ng>
 
 ```
 
@@ -256,11 +259,11 @@ You can also renamed props exposed to angular
 
 ```html  
 My name from Vue is stored in myNameInVue = {{myNameInVue}}
-<ng-vue :my-name-in-angular="myNameInVue">
+<vue-ng :my-name-in-angular="myNameInVue">
     <div v-pre>
         My name passed to Angular in myNameInAngular = {{myNameInAngular}}
     </div>
-</ng-vue>
+</vue-ng>
 
 ```
 
@@ -269,22 +272,22 @@ Or do two-way binding
 
 ```html  
 My name from Vue is stored in myNameInVue = {{myNameInVue}}
-<ng-vue :my-name-in-angular.sync="myNameInVue">
+<vue-ng :my-name-in-angular.sync="myNameInVue">
     <div v-pre>
        Type your name from Angular in myNameInAngular = <input ng-model="myNameInAngular"><br>
        Your name {{myNameInAngular}} will be sync back to Vue parent `myNameInVue` prop.
 
     </div>
-</ng-vue>
+</vue-ng>
 
 ```
 
 
-Of course you can mix and match `ng-vue` *component* and *directive*
+Of course you can mix and match `vue-ng` & `ng-vue`
 
 ```html  
 My name from Vue is: {{name}}
-<ng-vue :name="name">
+<vue-ng :name="name">
     <div v-pre>
 
         My name from Angular (inside vue) is: {{name}}
@@ -293,16 +296,16 @@ My name from Vue is: {{name}}
 
            My name from Vue (inside Angular (inside Vue)) is: {{name}}
 
-           <ng-vue :name="name">
+           <vue-ng :name="name">
                <div v-pre>
                    My name from Angular (inside Vue (inside Angular (inside Vue))) is: {{name}}
                    ...
                </div>
-           </ng-vue>
+           </vue-ng>
 
         </div>
 
     </div>
-</ng-vue>
+</vue-ng>
 
 ```

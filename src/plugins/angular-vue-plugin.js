@@ -1,6 +1,6 @@
 import angular from 'angular';
-import AngularVueComponent from "../components/ng-vue.js";
-import camelCase from "lodash/camelCase";
+import AngularVueComponent from "../components/vue-ng.js";
+import pascalCase from '../libs/pascal-case.js';
 
 export default function AngularVuePlugin({ $injector, ngApp, vueApp }) {
 
@@ -18,12 +18,9 @@ export default function AngularVuePlugin({ $injector, ngApp, vueApp }) {
     install(Vue, options) {
         if(!Vue.prototype.$ngVue) {
 
-          const { ngVueName } = options || {};
- 
-          if(ngVueName && ngVueName!=camelCase(ngVueName)) 
-            throw new Error("ngVueName component name must be 'camelCase'")
+          const { vueNgName } = options || {};
 
-          Vue.component(ngVueName || 'ngVue', AngularVueComponent)
+          Vue.component(pascalCase(vueNgName || 'VueNg'), AngularVueComponent)
 
           Object.defineProperty(Vue.prototype, '$ngVue', {
             get () { return ngVuePlugin }

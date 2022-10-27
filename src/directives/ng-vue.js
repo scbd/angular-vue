@@ -12,10 +12,7 @@ import sort  from 'lodash/sortBy';
 import lookupParentComponent from '../libs/lookup-parent-component.js'
 import safeApply from '../libs/safe-apply';
 
-export default { register };
-
-function register(ngModule) {
-  ngModule.directive('ngVue', [ function () {
+export default [ function () {
     return {
       restrict: 'A',
       terminal: true, // any directive with lower priority will be ignored
@@ -214,5 +211,5 @@ function register(ngModule) {
         throw Error(`"${expression}" is not defined on parent scope`);
       }
     }
-  } ]);
-}
+  } 
+]

@@ -52,7 +52,7 @@
                                 <input v-model="ngName"> {{ngName}}
 
                                 <div v-if="ngName!='1'" class="ng-box">
-                                    <ng-vue :sub-name.sync="ngName">
+                                    <vue-ng :sub-name.sync="ngName">
                                         <div v-pre>
                                             <input ng-model="subName"> {{subName}}
 
@@ -61,17 +61,17 @@
                                                     <input v-model="subName"> {{subName}}
 
                                                     <div class="ng-box">
-                                                        <ng-vue :sub-sub-name.sync="subName">
+                                                        <vue-ng :sub-sub-name.sync="subName">
                                                             <div v-pre>
                                                                 <input ng-model="subSubName"> {{subSubName}}
                                                             </div>
-                                                        </ng-vue>
+                                                        </vue-ng>
                                                     </div>
                                                 </div>
                                             </div>
                 
                                         </div>
-                                    </ng-vue>
+                                    </vue-ng>
                                 </div>
                             </div>
                         </div>
