@@ -3,7 +3,31 @@
   "version": "3.1.0",
   "description": "",
   "type": "module",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "import": "dist/index.js",
+  "unpkg": "dist/index.js",
+  "jsdelivr": "dist/index.js",
+  "browser": "dist/index.js",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    },
+    "./components/*": {
+      "default": "./dist/components/*.js"
+    },
+    "./directives/*": {
+      "default": "./dist/directives/*.js"
+    },
+    "./plugins/*": {
+      "default": "./dist/plugins/*.js"
+    }
+  },
+  "files": [
+    "dist/*",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build": "rm -rf ./dist && npx rollup -c",
     "dev": "rm -rf ./dist && npx rollup -c --watch",
@@ -14,12 +38,6 @@
     "type": "git",
     "url": "git+https://github.com/scbd/angular-vue.git"
   },
-  "files": [
-    "dist/*",
-    "package.json",
-    "LICENSE",
-    "README.md"
-  ],
   "keywords": ["vue", "angularjs", "angular"],
   "author": "",
   "license": "MIT",

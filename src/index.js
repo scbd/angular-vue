@@ -1,6 +1,3 @@
-import angular from 'angular';
-import vueDirective from './directives/vue';
-
-const ngModule = angular.module('angularVue', []);
-
-vueDirective.register(ngModule);
+export * from './plugins/index.js';
+export { default as AngularVueDirective } from './directives/ng-vue.js'
+export { default as AngularVueComponent } from './components/ng-vue.js'

@@ -1,5 +1,5 @@
 import angular from 'angular';
-import AngularVueComponent from "../components/angular-vue.js";
+import AngularVueComponent from "../components/ng-vue.js";
 import camelCase from "lodash/camelCase";
 
 export default function AngularVuePlugin({ $injector, ngApp, vueApp }) {
