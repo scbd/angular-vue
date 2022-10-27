@@ -5,3 +5,5 @@ const ngModule = angular.module('angularVue', []);
 
 ngModule.directive('ngVue', ngVueDirective);
 
+export default ngModule;
+
