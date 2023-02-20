@@ -16,7 +16,7 @@ const globals = {
 export default [
   bundle('src/index.js',                             'dist/index.js',                        'AngularVue'),
   bundle('src/directives/ng-vue.js',                 'dist/directives/ng-vue.js',            'AngularVueDirective'),
-  bundle('src/components/vue-ng.js',                 'dist/components/vue-ng.js',            'AngularVueComponent'),
+  bundle('src/components/vue-ng.js',                 'dist/components/vue-ng.js',            'VueAngularComponent'),
   bundle('src/plugins/angular-vue-plugin.js',        'dist/plugins/ng-vue-plugin.js',        'AngularVuePlugin'),
   bundle('src/plugins/angular-vue-plain-plugin.js',  'dist/plugins/ng-vue-plain-plugin.js',  'AngularVuePlainPlugin'),
   bundle('src/plugins/angular-vue-route-plugin.js',  'dist/plugins/ng-vue-route-plugin.js',  'AngularVueRoutePlugin'),
@@ -30,7 +30,7 @@ export default [
 function bundle(inFile, outFile, name) {
 
   const outputOptions = {
-    format   : 'umd',
+    format   : 'esm',
     sourcemap: true,
     name,
     globals,
@@ -39,8 +39,8 @@ function bundle(inFile, outFile, name) {
   return {
     input : inFile,
     output: [
-      { ...outputOptions, file: outFile },
-      { ...outputOptions, file: outFile.replace(/\.js$/, '.min.js'), plugins: [ terser() ] },
+      { ...outputOptions, format : 'umd', file: outFile },
+      { ...outputOptions, format : 'umd', file: outFile.replace(/\.js$/, '.min.js'),  plugins: [ terser() ] },
     ],
     external: [ ...Object.keys(globals) ],
     plugins : [
