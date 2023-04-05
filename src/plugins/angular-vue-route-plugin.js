@@ -19,13 +19,15 @@ export default function AngularVueRoutePlugin($injector) {
   
     function updateRoute() {
       const path   = $location.path();
+      const hash   = $location.hash();
       const query  = { ...($location.search()    || {})};
       const params = { ...($route.current?.params|| {})};
   
       observableRoute._route = {
         get path()   { return path; },
+        get hash()   { return hash ? `#${hash}` : ''; },
         get query()  { return { ...query  }; },
-        get params() { return { ...params }; }
+        get params() { return { ...params }; },
       }
     }
   

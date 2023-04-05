@@ -16,12 +16,14 @@ export default function AngularVueRouterPlugin($injector) {
     } 
 
     var router ={
-        push ({path, query}){
+        push ({path, query, hash}){
             ngApply(() => {
                 if(path)  
                     $location.path(path);
                 if(query) 
                     $location.search(query||{});
+                if(hash!==undefined) 
+                    $location.hash((hash||'').replace(/^#/, ''));
             });
         },
         replace(...args) {
