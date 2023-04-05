@@ -41,6 +41,8 @@ function bundle(inFile, outFile, name) {
     output: [
       { ...outputOptions, format : 'umd', file: outFile },
       { ...outputOptions, format : 'umd', file: outFile.replace(/\.js$/, '.min.js'),  plugins: [ terser() ] },
+      { ...outputOptions, format : 'esm', file: outFile.replace(/\.js$/, '.mjs') },
+      { ...outputOptions, format : 'esm', file: outFile.replace(/\.js$/, '.min.mjs'), plugins: [ terser() ] },
     ],
     external: [ ...Object.keys(globals) ],
     plugins : [
