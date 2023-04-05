@@ -6,7 +6,7 @@ export default function ({ logout, fetchUser }={}) {
   
     const auth = {
       get user()          { return state.user; },
-      get loggedIn()      { return user && user.isAuthenticated; },
+      get loggedIn()      { return !!(state.user && state?.user?.isAuthenticated); },
       setUser(newUser)    { state.user = newUser; },
       setUserToken(token) { state.userToken = token; },
   
