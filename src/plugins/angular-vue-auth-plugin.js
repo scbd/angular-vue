@@ -1,4 +1,4 @@
-export default function ({ logout, fetchUser }={}) {
+export default function ({ login, logout, fetchUser }={}) {
     const state = Vue.observable({
       user     : null,
       userToken: null,
@@ -10,13 +10,21 @@ export default function ({ logout, fetchUser }={}) {
       setUser(newUser)    { state.user = newUser; },
       setUserToken(token) { state.userToken = token; },
   
+      async login(...args)        {
+
+        if(!login) { throw new Error('"login" Not Implemented'); } 
+
+        if(this.loggedIn) return;
+
+        return await login(...args);
+      },
       logout()        {
-        if(!logout) { throw new Error('Not Implemented'); } 
+        if(!logout) { throw new Error('"logout" Not Implemented'); } 
 
         logout();
       },
       async fetchUser()     {
-        if(!fetchUser) { throw new Error('Not Implemented'); } 
+        if(!fetchUser) { throw new Error('"fetchUser" Not Implemented'); } 
 
         const user = await fetchUser();
         this.setUser(user);
