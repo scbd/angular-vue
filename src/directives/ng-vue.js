@@ -1,11 +1,18 @@
-import _ from 'lodash';
 import Vue from 'Vue';
 import paths from '../libs/paths';
+import omit from 'lodash/omit'
+import _get from 'lodash/get';
+import _set from 'lodash/get';
+import forEach from 'lodash/forEach';
+import kebabCase from 'lodash/kebabCase';
+import camelCase from 'lodash/camelCase';
+import union from 'lodash/union';
+import uniq  from 'lodash/uniq';
+import sort  from 'lodash/sortBy';
+import lookupParentComponent from '../libs/lookup-parent-component.js'
+import safeApply from '../libs/safe-apply';
 
-export default { register };
-
-function register(ngModule) {
-  ngModule.directive('ngVue', [ function () {
+export default [ function () {
     return {
       restrict: 'A',
       terminal: true, // any directive with lower priority will be ignored
@@ -28,26 +35,37 @@ function register(ngModule) {
           vueData[vueProp] = scope.$eval(ngProp); // set initial value
         });
 
-                // Create root component;
+        // Create root component;
         let options = {};
 
         if (attrs.ngVue) options = scope.$eval(attrs.ngVue) || {};
-        options = _.omit(options, 'props', 'data', 'computed', 'methods', 'watch')
+        options = omit(options, 'props', 'data', 'computed', 'methods', 'watch')
 
         ngDelegates.forEach((ngDelegate) => {
           vueMethods[ngDelegate] = (...args) => {
-            if(options.verbose) console.log(`Calling ng delegate: ${ngDelegate}()`);
-            scope.$apply(() => scope.$eval(ngDelegate).apply(scope, args));
+            console.debug(`ng(vue): Calling ng delegate: ${ngDelegate}()`);
+            safeApply(scope, () => scope.$eval(ngDelegate).apply(scope, args));
           };
         });
 
-;
+        // try to lookup the closet vue parent component in the DOM tree; 
+        const parent = lookupParentComponent(element) || Vue.prototype?.$ngVue?.vueApp || undefined;
+
+        console.log('parent',parent);
 
         const vm = new Vue({
+          parent,
           ...options,
           data   : vueData,
           methods: vueMethods,
         }).$mount(element[0]);
+
+        vm.$el.$component = vm; //save current component to DOM element 
+
+        scope.$on('$destroy', ()=>{ //Destroy vue component when parent scope is destroyed. 
+          console.debug('ng(vue): destroying vue-comp', vm)
+          vm.$destroy();
+        });
 
         // Watch changes
 
@@ -55,13 +73,13 @@ function register(ngModule) {
           const vueProp = ngProp;
 
           scope.$watch(ngProp, (value) => {
-            if(options.verbose) console.log(`ng(${ngProp}) => vue(${vueProp}) =`, value);
+            console.debug(`ng(vue): ng(${ngProp}) => vue(${vueProp}) =`, value);
 
             let target = vm;
             let prop   = vueProp;
 
             if (!paths.isRoot(prop)) {
-              target = _.get(vm, paths.parent(prop));
+              target = _get(vm, paths.parent(prop));
               prop   = paths.leaf(prop);
             }
 
@@ -69,11 +87,20 @@ function register(ngModule) {
           });
         });
 
-        _.forEach(syncedPropertiesMapping, (ngProp, vueProp) => { // .sync
-          vm.$children.forEach((c) => c.$on(`update:${_.kebabCase(vueProp)}`, (value) => {
-            if(options.verbose) console.log(`vue(${vueProp}) => ng(${ngProp}) =`, value);
-            scope.$apply(() => _.set(scope, ngProp, value));
+        forEach(syncedPropertiesMapping, (ngProp, vueProp) => { // .sync
+
+          vm.$children.forEach((c) => c.$on(`update:${camelCase(vueProp)}`, (value) => {
+            console.debug(`ng(vue): vue(${vueProp}) => ng(${ngProp}) =`, value);
+            safeApply(scope, () => _set(scope, ngProp, value));
           }));
+
+          //shoudl only use CamelCase.. keep kebabCase support for backward compatibility 
+          vm.$children.forEach((c) => c.$on(`update:${kebabCase(vueProp)}`, (value) => {
+            console.warn(`$emit event using camelCase (update:${camelCase(vueProp)}). instead of kebabCase (update:${kebabCase(vueProp)}).`)
+            console.debug(`ng(vue): vue(${vueProp}) => ng(${ngProp}) =`, value);
+            safeApply(scope, () => _set(scope, ngProp, value));
+          }));
+
         });
       },
     };
@@ -89,7 +116,7 @@ function register(ngModule) {
 
       const attributes = remapAttributes(attrs);
 
-      _.forEach(attributes, (value, name) => {
+      forEach(attributes, (value, name) => {
         const validName =  vBind.test(name)
                             || vDirectives.test(name);
 
@@ -103,10 +130,10 @@ function register(ngModule) {
       let allProperties = [ ...properties ];
 
       properties.forEach((prop) => {
-        allProperties =  _.union(allProperties, paths.parents(prop));
+        allProperties =  union(allProperties, paths.parents(prop));
       });
 
-      return _(allProperties).uniq().sort().value();
+      return sort(uniq(allProperties));
     }
 
     function loadSyncedPropertiesMapping(attrs) {
@@ -119,7 +146,7 @@ function register(ngModule) {
       const mapping    = {};
       const attributes = remapAttributes(attrs);
 
-      _.forEach(attributes, (value, name) => {
+      forEach(attributes, (value, name) => {
         if (vModel.test(name)) {
           const vueProp = 'value';
 
@@ -157,7 +184,7 @@ function register(ngModule) {
 
       const attributes = remapAttributes(attrs);
 
-      _.forEach(attributes, (value, name) => {
+      forEach(attributes, (value, name) => {
         const validName = vOnRe.test(name);
 
         if (validName && vOnDelegateRe.test(value)) {
@@ -171,7 +198,7 @@ function register(ngModule) {
     function remapAttributes(attrs) {
       const attributes = {};
 
-      _.forEach(attrs.$attr, (name, key) => {
+      forEach(attrs.$attr, (name, key) => {
         const value      = attrs[key];
         attributes[name] = value;
       });
@@ -184,5 +211,5 @@ function register(ngModule) {
         throw Error(`"${expression}" is not defined on parent scope`);
       }
     }
-  } ]);
-}
+  } 
+]

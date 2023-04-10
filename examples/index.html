@@ -1,47 +1,113 @@
 <!doctype html>
-<html  ng-app="app" >
+<html  >
   <head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js" integrity="sha512-90vH1Z83AJY9DmlWa8WkjkV79yfS2n2Oxhsi2dZbIv0nC4E6m5AbH8Nh156kkM7JePmqD6tcZsfad1ueoaovww==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7/dist/vue.js"></script>
     <script src="../dist/angular-vue.js"></script>
+    <script src="../dist/angular-vue-plugins.js"></script>
 </head>
   <body >
     <div>
         <div ng-controller="MyNgController">
-            <h1>AngularJS</h1>
-            <div ng-repeat="c in contacts">
-                <label>firstName:</label>
-                <input type="text" ng-model="c.firstName" placeholder="Enter a name here">
-                <br>
-                <label>lastName:</label>
-                <input type="text" ng-model="c.lastName" placeholder="Enter a name here"><br>
-                <button ng-click="reset()">Reset from angular</button>
-            </div>
-            <label>scope value</label>
-            <input type="text" ng-model="myValue" placeholder="Enter a name here"><br>
-            <pre>{{contacts|json}}</pre>
-            <hr>
-            <h1>Vuejs</h1>
-            <div ng-repeat="c in contacts">
-                <full-name ng-vue :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
-                <full-name ng-vue="{ components: localComponents }" :first-name.sync="c.firstName" :last-name="c.lastName" @alert="alert"></full-name>
-            </div>
-
-            <div ng-vue ng-vue-expose="contacts,myValue">
-                    <geeting :contact="contacts[2]"></Geeting>
-                    <button>{{myValue}}</button>
-            </div>
+            <table style="width: 100%">
+                <tr>
+                   <td style="width: 33%">
+                        <h1>AngularJS</h1>
+                        <div ng-repeat="c in contacts">
+                            <label>firstName:</label>
+                            <input type="text" ng-model="c.firstName" placeholder="Enter a name here">
+                            <br>
+                            <label>lastName:</label>
+                            <input type="text" ng-model="c.lastName" placeholder="Enter a name here"><br>
+                            <button ng-click="reset()">Reset from angular</button>
+                        </div>
+                        <label>scope value</label>
+                        <input type="text" ng-model="myValue" placeholder="Enter a name here"><br>
+                        <pre>{{contacts|json}}</pre>
+                    </td>
+                    <td style="width: 33%">
+                        <h1>AngularJS(Vuejs)</h1>
+                        <div ng-repeat="c in contacts">
+                            <full-name ng-vue="{ components: localComponents }" :first-name.sync="c.firstName" :last-name.sync="c.lastName" @alert="alert"></full-name>
+                        </div>
             
-            <button ng-vue ng-vue-expose="contacts" @click="reset()" > Reset {{contacts[1].firstName}}</button>
-            <em ng-vue ng-vue-expose="myValue" > myValue: {{myValue}}</em>
+                        <div ng-vue ng-vue-expose="contacts,myValue">
+                                <greeting :contact="contacts[2]"></greeting>
+                                <button>{{myValue}}</button>
+                        </div>
+                        
+                        <button ng-vue ng-vue-expose="contacts" @click="reset()" > Reset {{contacts[1].firstName}}</button>
+                        <em ng-vue ng-vue-expose="myValue" > myValue: {{myValue}}</em>
+            
+                        <pre ng-vue ng-vue-expose="contacts" >{{contacts}}</pre>
+                    </td>
+                    <td style="width: 33%;vertical-align: top;" >
+                        <h1>AngularJS into Vuejs into AngularJS....</h1>
 
-            <pre ng-vue ng-vue-expose="contacts" >{{contacts}}</pre>
+                        <div class="ng-box">
+                            <input ng-model="ngName"> {{ngName}}
 
-           
-            <hr>
+                            <div class="vue-box" ng-vue ng-vue-expose="ngName">
+                                <input v-model="ngName"> {{ngName}}
+
+                                <div v-if="ngName!='1'" class="ng-box">
+                                    <vue-ng :sub-name.sync="ngName">
+                                        <div v-pre>
+                                            <input ng-model="subName"> {{subName}}
+
+                                            <div ng-if="subName!=2">
+                                                <div class="vue-box" ng-vue ng-vue-expose="subName">
+                                                    <input v-model="subName"> {{subName}}
+
+                                                    <div class="ng-box">
+                                                        <vue-ng :sub-sub-name.sync="subName">
+                                                            <div v-pre>
+                                                                <input ng-model="subSubName"> {{subSubName}}
+                                                            </div>
+                                                        </vue-ng>
+                                                    </div>
+                                                </div>
+                                            </div>
+                
+                                        </div>
+                                    </vue-ng>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
+
+    <style>
+        .ng-box::before  {
+            content: 'AngularJs';
+        }
+        .vue-box::before  {
+            content: 'Vue';
+        }
+        .ng-box::before, .vue-box::before  {
+            display: block;
+            font-size: 200%;
+            font-weight: bold;
+
+
+        }
+
+        .ng-box  {
+            border:solid 3px red;
+        }
+        .vue-box  {
+            border:solid 3px green;
+        }
+
+        .ng-box, .vue-box {
+            padding: 5px; 
+            margin: 5px;
+        }
+    </style>
 
     <script>
         var FullName = Vue.extend({
@@ -50,29 +116,38 @@
                 'lastName'
             ],
             computed: {
-                fn: { get() { return this.firstName}, set(v) { this.$emit("update:first-name", v) }  },
+                fn: { get() { return this.firstName}, set(v) { this.$emit("update:firstName", v) }  },
                 ln: { get() { return this.lastName }, set(v) { this.$emit("update:last-name", v) }  }
             },
             template: `<div> 
                 <label>firstName:</label> <input v-model="fn"> {{fn}}<br>
-                <label>firstName:</label> <input v-model="ln"> {{ln}}<br>
+                <label>lastName:</label> <input v-model="ln"> {{ln}}<br>
                 <button @click="$emit('alert', firstName + ' ' + lastName)">Message me</button> </div>`
         })
 
         Vue.component("greeting", {
+            name:'greeting',
             props: [
                 'contact',
             ],
-            template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!<b>`
+            template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!</b>`
         })
 
         var app = angular.module("app",["angularVue"])
+
+        const { AngularVuePlugin } = AngularVuePlugins;
+
+        app.run(['$injector', function($injector){
+            Vue.use(new AngularVuePlugin({ $injector }));
+        }])
+        
 
         app.controller('MyNgController', function($scope){
             $scope.localComponents = {
                 fullName : FullName
             }
 
+            $scope.ngName = "Test";
             $scope.myValue = "";
      
             $scope.contacts = []
@@ -96,6 +171,9 @@
 
             $scope.reset();
         });
+
+
+        angular.bootstrap(document, [app.name]);    
 
     </script>
   </body>

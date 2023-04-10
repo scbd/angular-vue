@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7/dist/vue.js"></script>
+</head>
+  <body >
+    <div>
+        <div ng-controller="MyNgController">
+            <h1>AngularJS into Vuejs into AngularJS....</h1>
+
+            <div class="ng-box">
+
+                <input ng-model="ngMessage"> {{ngMessage}}
+
+                <div class="vue-box" ng-vue :message.sync="ngMessage" >
+                    <input v-model="message"> {{message}}
+
+                </div>
+
+                <div ng-Repeat="ctc in ngContacts">
+                    <div class="vue-box" ng-vue :index="$index" :first-name.sync="ctc.firstName" :last-name.sync="ctc.lastName" >
+                        {{index}} {{firstName}} {{lastName}}<br>
+                        <input v-model="firstName">
+                        <input v-model="lastName">
+                    </div>
+                </div>
+                <div class="vue-box" ng-vue :first-name-1.sync="ngContacts[0].firstName" :first-name-2.sync="ngContacts[1].firstName" >
+                    [0]<input v-model="firstName1"> + 
+                    [1]<input v-model="firstName2"> = 
+                    <span v-if="`${firstName1} ${firstName2}`=='febina blaise'">❤️</span>
+                    <span v-else-if="`${firstName1} ${firstName2}`=='febina stephane'"> 😤 => 🤜🏽🤓</span>
+                    <span v-else>💔</span>
+
+                </div>
+                <div class="vue-box" ng-vue :name="ngContacts[0].firstName+' '+ngContacts[0].lastName" >
+                    {{name}}
+                </div>
+
+                {{ngContacts}}
+
+                <div class="vue-box" ng-vue :message.sync="ngMessage" >
+                    <input v-model="message"> {{message}}
+                </div>
+
+
+                <test ng-vue="{ components }" :message="ngMessage" @message="alert($event)"></test>
+                
+                test vModel
+                <input class="vue-box" ng-vue v-if="ngMessage!='2'" :value="ngMessage" @input="ngMessage=$event.target.value"> 
+                <input class="vue-box" ng-vue v-if="ngMessage!='1'" v-model="ngMessage">
+                
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .ng-box::before  {
+            content: 'AngularJs';
+        }
+        .vue-box::before  {
+            content: 'Vue';
+        }
+        .ng-box::before, .vue-box::before  {
+            display: block;
+            font-size: 200%;
+            font-weight: bold;
+        }
+
+        .ng-box  {
+            border:solid 3px red;
+        }
+        .vue-box  {
+            border:solid 3px green;
+        }
+
+        .ng-box, .vue-box {
+            padding: 5px; 
+            margin: 5px;
+        }
+    </style>
+
+    <script type="module">
+
+        import ngVue from '../src/directives/ng-vue-2.js'    
+
+        const app = angular.module("app",[])
+
+
+        app.directive('ngVue', ngVue)
+
+
+        // app.run(['$injector', function($injector){
+        //     Vue.use(new AngularVuePlugin({ $injector }));
+        // }])
+
+        var test = {
+            template:`<div><button @click="trigger(message)">Send Alert!</button><input v-model="internalMsg"></div>`,
+            props: {
+                message: String
+            },
+            computed: {
+                internalMsg : {
+                    get()  { return this.message },
+                    set(v) { return this.$emit(`update:message`, v) }
+                }
+            },
+            methods:{
+                trigger(v){ this.$emit('message', v)}
+            }
+        }
+        
+        app.controller('MyNgController', function($scope){
+
+            $scope.components = { test };
+
+            $scope.ngContacts = [{
+                firstName: 'stephane',
+                lastName: 'bilodeau'
+            },{
+                firstName: 'blaise',
+                lastName: 'fonseca'
+            }]
+
+            $scope.ngMessage = "Test";
+
+            $scope.reset = function() {
+                $scope.ngMessage = "Hello!";
+            };
+
+            $scope.alert = function(msg) {
+                alert(`${msg}`);
+            }
+
+            $scope.reset();
+        });
+
+
+        angular.bootstrap(document, [app.name]);    
+
+    </script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-export const AngularVueRouterPlugin = ($injector) =>{
+export default function AngularVueRouterPlugin($injector) {
 
     if(!$injector)
         throw new Error('Angular $injector not provided, cannot use AngularVueRouterPlugin plugin');
@@ -16,12 +16,14 @@ export const AngularVueRouterPlugin = ($injector) =>{
     } 
 
     var router ={
-        push ({path, query}){
+        push ({path, query, hash}){
             ngApply(() => {
                 if(path)  
                     $location.path(path);
                 if(query) 
                     $location.search(query||{});
+                if(hash!==undefined) 
+                    $location.hash((hash||'').replace(/^#/, ''));
             });
         },
         replace(...args) {
@@ -37,4 +39,4 @@ export const AngularVueRouterPlugin = ($injector) =>{
                 Vue.prototype.$router = router;
         }
       }
-};
+}
