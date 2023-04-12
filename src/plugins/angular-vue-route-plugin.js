@@ -1,5 +1,9 @@
+import Vue from 'Vue';
 
 export default function AngularVueRoutePlugin($injector) {
+
+  if(!$injector)
+    $injector = Vue?.prototype?.$ngVue?.$injector;
 
     if(!$injector)
         throw new Error('Angular $injector not provided, cannot use AngularVueRoutePlugin plugin');
