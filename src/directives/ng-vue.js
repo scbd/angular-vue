@@ -51,8 +51,6 @@ export default [ function () {
         // try to lookup the closet vue parent component in the DOM tree; 
         const parent = lookupParentComponent(element) || Vue.prototype?.$ngVue?.vueApp || undefined;
 
-        console.log('parent',parent);
-
         const vm = new Vue({
           parent,
           ...options,
