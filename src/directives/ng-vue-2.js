@@ -1,4 +1,4 @@
-const camelCase = _.camelCase;
+import camelCase from 'lodash/camelCase';
 
 export default [function () {
     return {

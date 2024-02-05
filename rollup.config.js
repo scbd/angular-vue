@@ -16,7 +16,8 @@ const globals = {
 export default [
   bundle('src/index.js',                             'dist/index.js',                        'AngularVue'),
   bundle('src/directives/ng-vue.js',                 'dist/directives/ng-vue.js',            'AngularVueDirective'),
-  bundle('src/directives/ng-vue-2.js',               'dist/directives/ng-vue2.js',           'AngularVue2Directive'),
+  bundle('src/directives/ng-vue-2.js',               'dist/directives/ng-vue-2.js',          'AngularVue2Directive'),
+  bundle('src/directives/ng-vue-3.js',               'dist/directives/ng-vue-3.js',          'AngularVue3Directive'),
   bundle('src/components/vue-ng.js',                 'dist/components/vue-ng.js',            'VueAngularComponent'),
   bundle('src/plugins/angular-vue-plugin.js',        'dist/plugins/ng-vue-plugin.js',        'AngularVuePlugin'),
   bundle('src/plugins/angular-vue-plain-plugin.js',  'dist/plugins/ng-vue-plain-plugin.js',  'AngularVuePlainPlugin'),
