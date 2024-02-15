@@ -7,6 +7,6 @@
     "scbd"
   ],
   "rules": {
-    "import/no-unresolved": [ 2, { "ignore": [ "Vue", "angular", "lodash" ] }]
+    "import/no-unresolved": [ 2, { "ignore": [ "vue", "angular" ] }]
   }
 }

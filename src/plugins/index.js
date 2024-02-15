@@ -1,5 +1,6 @@
-export { default as CreateAngularVuePlainPlugin } from './angular-vue-plain-plugin'
-export { default as AngularVueRoutePlugin       } from './angular-vue-route-plugin'
-export { default as AngularVueRouterPlugin      } from './angular-vue-router-plugin'
-export { default as AngularVueAuthPlugin        } from './angular-vue-auth-plugin'
-export { default as AngularVuePlugin            } from './angular-vue-plugin'
+export * from './angular-vue-route-plugin';
+export * from './angular-vue-router-plugin';
+export * from './angular-vue-plugin';
+export * from './angular-vue-auth-plugin';
+export * from './angular-vue-plain-plugin';
+export * from './registry';

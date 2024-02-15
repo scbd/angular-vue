@@ -1,27 +1,13 @@
 {
   "name": "@scbd/angular-vue",
-  "version": "3.2.0",
+  "version": "5.0.0-alpha.1",
   "description": "",
   "type": "module",
-  "main": "dist/index.js",
-  "import": "dist/index.js",
+  "main": "dist/cjs/index.js",
+  "import": "dist/esm/index.js",
   "unpkg": "dist/index.js",
   "jsdelivr": "dist/index.js",
   "browser": "dist/index.js",
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    },
-    "./components/*": {
-      "default": "./dist/components/*.js"
-    },
-    "./directives/*": {
-      "default": "./dist/directives/*.js"
-    },
-    "./plugins/*": {
-      "default": "./dist/plugins/*.js"
-    }
-  },
   "files": [
     "dist/*",
     "package.json",
@@ -29,16 +15,20 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf ./dist && npx rollup -c",
-    "dev": "rm -rf ./dist && npx rollup -c --watch",
-    "eslint": "npx eslint . --fix",
+    "build": "rm -rf ./dist && semistandard && rollup -c",
+    "dev": "rm -rf ./dist && nodemon -e js,ts --watch src --exec 'semistandard --fix | snazzy && rollup -c'",
+    "test": "semistandard",
     "cleanup": "rm -rf ./node_module && npm install"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scbd/angular-vue.git"
   },
-  "keywords": ["vue", "angularjs", "angular"],
+  "keywords": [
+    "vue",
+    "angularjs",
+    "angular"
+  ],
   "author": "",
   "license": "MIT",
   "bugs": {
@@ -49,13 +39,22 @@
     "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.19.4",
     "@rollup/plugin-babel": "^6.0.0",
-    "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "eslint": "~7.10.0",
-    "eslint-config-scbd": "github:scbd/eslint-config-scbd#2020.41.0",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "rollup": "^2.79.1",
-    "rollup-plugin-terser": "^7.0.2",
-    "vue": "^2.7.13"
+    "semistandard": "^17.0.0",
+    "snazzy": "^9.0.0",
+    "vue": "^3.4.15"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.15"
+  },
+  "semistandard": {
+    "globals": [
+      "angular"
+    ]
+  },
+  "dependencies": {
+    "nodemon": "^3.0.3"
   }
 }

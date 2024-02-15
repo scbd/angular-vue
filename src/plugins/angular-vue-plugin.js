@@ -1,31 +1,36 @@
-import angular from 'angular';
-import AngularVueComponent from "../components/vue-ng.js";
-import pascalCase from '../libs/pascal-case.js';
+import kebabCase from 'lodash-es/kebabCase';
+import AngularVueComponent from '../components/vue-ng';
+import { shallowRef, inject } from 'vue';
+const defaultInjectKey = 'ngVue';
 
-export default function AngularVuePlugin({ $injector, ngApp, vueApp }) {
+class AngularVuePlugin {
+  #injector = shallowRef(null);
+  #ngApp = shallowRef(null);
 
-  // if(!$injector)
-  //     throw new Error('Angular $injector not provided, cannot use AngularVuePlugin plugin');
+  constructor ({ $injector, ngApp }) {
+    if (!$injector) { throw new Error('Angular $injector not provided, cannot use AngularVuePlugin plugin'); }
 
-  const ngVuePlugin = {
-    get $injector()   { return $injector || angular.injector(); },
-    get vueApp()      { return vueApp; },
-    get ngApp()       { return ngApp; },
+    this.#injector.value = $injector;
+    this.#ngApp.value = ngApp;
   }
 
-  return {
+  get $injector () { return this.#injector.value; }
+  get ngApp () { return this.#ngApp.value; }
 
-    install(Vue, options) {
-        if(!Vue.prototype.$ngVue) {
+  install (app, options) {
+    const { vueNgName } = options || {};
 
-          const { vueNgName } = options || {};
+    app.provide(defaultInjectKey, this);
+    app.component(kebabCase(vueNgName || 'VueNg'), AngularVueComponent);
 
-          Vue.component(pascalCase(vueNgName || 'VueNg'), AngularVueComponent)
+    app.config.globalProperties.$ngVue = this;
+  }
+}
 
-          Object.defineProperty(Vue.prototype, '$ngVue', {
-            get () { return ngVuePlugin }
-          })
-        }
-    }
-  };
+export function createNgVue (options) {
+  return new AngularVuePlugin(options);
+}
+
+export function useNgVue () {
+  return inject(defaultInjectKey);
 }

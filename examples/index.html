@@ -1,83 +1,85 @@
 <!doctype html>
-<html  >
+<html>
   <head>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.7/dist/vue.js"></script>
-    <script src="../dist/angular-vue.js"></script>
-    <script src="../dist/angular-vue-plugins.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.0/angular-route.min.js"></script>
+    <script type="importmap">
+    { "imports": {
+        "vue"     : "https://cdn.jsdelivr.net/npm/vue@3.4.15/dist/vue.esm-browser.js"
+    } }
+  </script>
 </head>
   <body >
     <div>
         <div ng-controller="MyNgController">
-            <table style="width: 100%">
-                <tr>
-                   <td style="width: 33%">
-                        <h1>AngularJS</h1>
-                        <div ng-repeat="c in contacts">
-                            <label>firstName:</label>
-                            <input type="text" ng-model="c.firstName" placeholder="Enter a name here">
-                            <br>
-                            <label>lastName:</label>
-                            <input type="text" ng-model="c.lastName" placeholder="Enter a name here"><br>
-                            <button ng-click="reset()">Reset from angular</button>
-                        </div>
-                        <label>scope value</label>
-                        <input type="text" ng-model="myValue" placeholder="Enter a name here"><br>
-                        <pre>{{contacts|json}}</pre>
-                    </td>
-                    <td style="width: 33%">
-                        <h1>AngularJS(Vuejs)</h1>
-                        <div ng-repeat="c in contacts">
-                            <full-name ng-vue="{ components: localComponents }" :first-name.sync="c.firstName" :last-name.sync="c.lastName" @alert="alert"></full-name>
-                        </div>
-            
-                        <div ng-vue ng-vue-expose="contacts,myValue">
-                                <greeting :contact="contacts[2]"></greeting>
-                                <button>{{myValue}}</button>
-                        </div>
-                        
-                        <button ng-vue ng-vue-expose="contacts" @click="reset()" > Reset {{contacts[1].firstName}}</button>
-                        <em ng-vue ng-vue-expose="myValue" > myValue: {{myValue}}</em>
-            
-                        <pre ng-vue ng-vue-expose="contacts" >{{contacts}}</pre>
-                    </td>
-                    <td style="width: 33%;vertical-align: top;" >
-                        <h1>AngularJS into Vuejs into AngularJS....</h1>
+            <h1>Vue into AngularJS (Current Vue version: {{vueVersion}})</h1>
 
-                        <div class="ng-box">
-                            <input ng-model="ngName"> {{ngName}}
+                <div class="ng-box">
 
-                            <div class="vue-box" ng-vue ng-vue-expose="ngName">
-                                <input v-model="ngName"> {{ngName}}
+                    <input ng-model="ngMessage"> {{ngMessage}}
 
-                                <div v-if="ngName!='1'" class="ng-box">
-                                    <vue-ng :sub-name.sync="ngName">
-                                        <div v-pre>
-                                            <input ng-model="subName"> {{subName}}
+                    <div class="vue-box" ng-vue v-model:click-count="clickCount">
+                        Current route: {{$route}}
+                        <button type="button" @click="$router.push({ path: `/updated/${++clickCount}`})">Update route</button>
+                    </div>
 
-                                            <div ng-if="subName!=2">
-                                                <div class="vue-box" ng-vue ng-vue-expose="subName">
-                                                    <input v-model="subName"> {{subName}}
+                    <div class="vue-box" ng-vue ng-vue-debug :message.sync="ngMessage" >
+                        message.sync <input v-model="message"> {{message}} (.sync should warn in console )
+                    </div>
 
-                                                    <div class="ng-box">
-                                                        <vue-ng :sub-sub-name.sync="subName">
-                                                            <div v-pre>
-                                                                <input ng-model="subSubName"> {{subSubName}}
-                                                            </div>
-                                                        </vue-ng>
-                                                    </div>
-                                                </div>
-                                            </div>
-                
-                                        </div>
-                                    </vue-ng>
-                                </div>
+                    <div class="vue-box" ng-vue v-model:message="ngMessage" >
+                        v-model:message <input v-model="message"> {{message}} 
+                    </div>
+                    <div class="vue-box" ng-vue :message="ngMessage" >
+                        message
+                        <input v-model="message"> {{message}} (one-way should throw exception)
+                    </div>
+                    <div class="vue-box" ng-vue :message.sync="ngMessage" >
+                        <input v-model="message"> {{message}}
+
+                        <span v-if="message">
+                        <vue-ng  :ng-Value="message">
+                            <div class="ng-box"  v-pre>
+                                this code run in angular!
+                                The value passed to Angular is {{ngValue}}
                             </div>
+                        </vue-ng>
+                        </span>
+                    </div>
+
+                    <h3>using v-model</h3>
+                    <test-vue3 class="vue-box" ng-vue="{ components }" v-model="ngMessage" @message="alert($event)"></test-vue3>
+
+                    <h3>using :modelValue/update:modelValue</h3>
+                    <test-vue3 class="vue-box" ng-vue="{ components }" :model-value="ngMessage" @update:model-value="ngMessage = $event" @message="alert($event)"></test-vue3>
+
+                    <h2>contact</h2>
+                    <div ng-Repeat="ctc in ngContacts">
+                        <div class="vue-box" ng-vue :index="$index" :first-name.sync="ctc.firstName" :last-name.sync="ctc.lastName" >
+                            {{index}} {{firstName}} {{lastName}}<br>
+                            <input v-model="firstName">
+                            <input v-model="lastName">
                         </div>
-                    </td>
-                </tr>
-            </table>
+                    </div>
+                    <div class="vue-box" ng-vue :first-name-1.sync="ngContacts[0].firstName" :first-name-2.sync="ngContacts[1].firstName" >
+                        [0]<input v-model="firstName1"> + 
+                        [1]<input v-model="firstName2"> = 
+                        <span v-if="`${firstName1} ${firstName2}`=='febina blaise'">❤️</span>
+                        <span v-else-if="`${firstName1} ${firstName2}`=='febina stephane'"> 😤 => 🤜🏽🤓</span>
+                        <span v-else>💔</span>
+
+                    </div>
+                    <div class="vue-box" ng-vue :name="ngContacts[0].firstName+' '+ngContacts[0].lastName" >
+                        {{name}}
+                    </div>
+
+                    <pre>{{ngContacts|json}}</pre>
+
+                    <div class="vue-box" ng-vue ng-vue-expose="ngMessage,&alert">
+                        ng-vue-expose warning
+                    </div>
+                </div>
         </div>
     </div>
 
@@ -92,8 +94,6 @@
             display: block;
             font-size: 200%;
             font-weight: bold;
-
-
         }
 
         .ng-box  {
@@ -109,71 +109,84 @@
         }
     </style>
 
-    <script>
-        var FullName = Vue.extend({
-            props: [
-                'firstName',
-                'lastName'
-            ],
-            computed: {
-                fn: { get() { return this.firstName}, set(v) { this.$emit("update:firstName", v) }  },
-                ln: { get() { return this.lastName }, set(v) { this.$emit("update:last-name", v) }  }
+    <script type="module">
+
+        import * as Vue from 'vue'    
+        import { 
+            registerPlugin,
+            createNgVue,
+            createAuth,
+            createRouter,
+            createRoute, 
+            NgVueDirective 
+        }     from '../dist/esm/index.js'     
+
+        const ngApp = angular.module("app",['ngRoute'])
+
+        ngApp.directive('ngVue',  NgVueDirective)
+
+        ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
+            $routeProvider.when('/', {});
+            $routeProvider.when('/updated', {});
+            $routeProvider.when('/updated/:count', {});
+        }]);
+
+        ngApp.run(['$injector', ($injector) => {
+
+            const ngVue = createNgVue({ $injector, ngApp });
+
+            registerPlugin(ngVue);
+            registerPlugin(createAuth({ }));
+            registerPlugin(createRouter({ plugins: { ngVue } }));
+            registerPlugin(createRoute( { plugins: { ngVue } }));
+        }]);
+
+        var testVue3 = {
+            template:`<div><button @click="trigger(internalMsg)">Send Alert!</button><input v-model="internalMsg">(vue 3)</div>`,
+            props: {
+                modelValue: String
             },
-            template: `<div> 
-                <label>firstName:</label> <input v-model="fn"> {{fn}}<br>
-                <label>lastName:</label> <input v-model="ln"> {{ln}}<br>
-                <button @click="$emit('alert', firstName + ' ' + lastName)">Message me</button> </div>`
-        })
-
-        Vue.component("greeting", {
-            name:'greeting',
-            props: [
-                'contact',
-            ],
-            template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!</b>`
-        })
-
-        var app = angular.module("app",["angularVue"])
-
-        const { AngularVuePlugin } = AngularVuePlugins;
-
-        app.run(['$injector', function($injector){
-            Vue.use(new AngularVuePlugin({ $injector }));
-        }])
-        
-
-        app.controller('MyNgController', function($scope){
-            $scope.localComponents = {
-                fullName : FullName
+            computed: {
+                internalMsg : {
+                    get()  { return this.modelValue },
+                    set(v) { this.$emit(`update:modelValue`, v) }
+                }
+            },
+            methods:{
+                trigger(v){ this.$emit('message', v)}
             }
+        }
+        
+        ngApp.controller('MyNgController', function($scope){
 
-            $scope.ngName = "Test";
-            $scope.myValue = "";
-     
-            $scope.contacts = []
+            $scope.components = { testVue3 };
+            
+            $scope.vueVersion = Vue.version;
+            $scope.clickCount = 0;
+
+            $scope.ngContacts = [{
+                firstName: 'stephane',
+                lastName: 'bilodeau'
+            },{
+                firstName: 'blaise',
+                lastName: 'fonseca'
+            }]
+
+            $scope.ngMessage = "Test";
 
             $scope.reset = function() {
-                console.log("reset");
-                $scope.contacts = [{
-                    firstName : "Stephane",
-                    lastName  : "Bilodeau"
-                },{
-                    firstName : "Blaise",
-                    lastName  : "Fonseca"
-                },{
-                    firstName : "Randy",
-                    lastName  : "Houlahan"
-                }]
-            }
+                $scope.ngMessage = "Hello!";
+            };
+
             $scope.alert = function(msg) {
-                alert(`Hello ${msg}`);
+                alert(`${msg}`);
             }
 
             $scope.reset();
         });
 
 
-        angular.bootstrap(document, [app.name]);    
+        angular.bootstrap(document, [ngApp.name]);    
 
     </script>
   </body>

@@ -1,12 +1,15 @@
-export default function renderVNodeToDomElement(vNode) {
+import { createApp } from 'vue';
 
-    const comp = new Vue({ render: () => vNode }); // create a dummy component that return the VNode from the render fn
+export default function renderVNodeToDomElement (vNode) {
+  const comp = createApp({ render: () => vNode }); // create a dummy component that return the VNode from the render fn
 
-    comp.$mount() // Mount as an orphan component
+  const placeHolder = document.createElement('div');
 
-    const domElement = comp.$el; // Save the native DOM Element converted from VNode;
+  comp.mount(placeHolder); // Mount as an orphan component
 
-    comp.$destroy();
+  const domElement = placeHolder.firstElementChild;
 
-    return domElement;
+  comp.unmount();
+
+  return domElement;
 }

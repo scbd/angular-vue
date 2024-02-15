@@ -1,42 +1,61 @@
-export default function AngularVueRouterPlugin($injector) {
+import { inject } from 'vue';
+import safeApply from '../libs/safe-apply';
 
-    if(!$injector)
-        throw new Error('Angular $injector not provided, cannot use AngularVueRouterPlugin plugin');
+const defaultInjectKey = 'router';
 
+class AngularVueRouterPlugin {
+  #ngVue;
+
+  constructor ({ plugins } = {}) {
+    if (!plugins?.ngVue) throw Error('option: plugins.ngVue is not set');
+
+    this.#ngVue = plugins.ngVue;
+  }
+
+  get #location () {
+    const { $injector } = this.#ngVue;
     const $location = $injector.get('$location');
+    return $location;
+  }
+
+  get #rootScope () {
+    const { $injector } = this.#ngVue;
     const $rootScope = $injector.get('$rootScope');
-    if(!$location)
-        throw new Error('Angular $location service not available, cannot use AngularVueRouterPlugin plugin');
+    return $rootScope;
+  }
 
-    const ngApply = (callback) => {
-        if($rootScope.$$phase) 
-            callback();
-        else 
-            $rootScope.$apply(callback);
-    } 
+  push ({ path, query, hash }) {
+    const $location = this.#location;
+    const $rootScope = this.#rootScope;
 
-    var router ={
-        push ({path, query, hash}){
-            ngApply(() => {
-                if(path)  
-                    $location.path(path);
-                if(query) 
-                    $location.search(query||{});
-                if(hash!==undefined) 
-                    $location.hash((hash||'').replace(/^#/, ''));
-            });
-        },
-        replace(...args) {
-            ngApply(() => {
-                $location.replace();
-                this.push(...args);
-            });
-        }
-    }
-    return {
-        install(Vue, options) {
-            if(!Vue.prototype.$router)
-                Vue.prototype.$router = router;
-        }
-      }
+    safeApply($rootScope, () => {
+      if (path) { $location.path(path); }
+      if (query) { $location.search(query || {}); }
+      if (hash !== undefined) { $location.hash((hash || '').replace(/^#/, '')); }
+    });
+  }
+
+  replace (...args) {
+    const $location = this.#location;
+    const $rootScope = this.#rootScope;
+
+    safeApply($rootScope, () => {
+      $location.replace();
+      this.push(...args);
+    });
+  }
+
+  install (app, options) {
+    app.provide(defaultInjectKey, this);
+
+    if (!app.config.globalProperties.$router) { app.config.globalProperties.$router = this; }
+  }
+}
+
+export function createRouter ({ plugins }) {
+  return new AngularVueRouterPlugin({ plugins });
+}
+
+export function useRouter () {
+  return inject(defaultInjectKey);
 }

@@ -3,10 +3,10 @@ export default {
   parents,
   leaf,
   root,
-  isRoot,
+  isRoot
 };
 
-function parent(path) {
+function parent (path) {
   const parts = split(path);
 
   parts.pop();
@@ -14,7 +14,7 @@ function parent(path) {
   return combine(parts);
 }
 
-function parents(path) {
+function parents (path) {
   const parentPaths = [];
 
   let parentPath = parent(path);
@@ -27,25 +27,25 @@ function parents(path) {
   return parentPaths;
 }
 
-function leaf(path) {
+function leaf (path) {
   const parts = split(path);
   return parts.pop();
 }
 
-function root(path) {
+function root (path) {
   return split(path)[0];
 }
 
-function isRoot(path) {
+function isRoot (path) {
   return split(path).length === 1;
 }
 
-function split(path) {
+function split (path) {
   if (!path) throw new Error(`Invalid path ${path}`);
 
   return path.split('.');
 }
 
-function combine(parts) {
+function combine (parts) {
   return parts.join('.');
 }
