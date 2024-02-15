@@ -1,105 +1,107 @@
-# SCBD angularVue
+** DOCUMENTATION IS INCOMPLETE AND NOT UP-TO-DATE NEED REVIEW**
 
-The goal of this library is to help SCBD to migrate away from AngularJS by allowing VueJs component to be use into the AngularJS world without having to change code afterwards. Only SCBD needed features are implemented. If you are looking for robust implementation to mix the two platforms please look at https://github.com/ngVue/ngVue
+# SCBD angularVue (Vue3)
 
-* [Using Vue into AngularJS](#using-vue-into-angularjs)
-* [Using AngularJS into Vue](#using-angularjs-into-vue) **New!** 
+The goal of this library is to help SCBD to migrate away from AngularJS by allowing VueJs component to be use into the AngularJS world (hoping) without having to change code afterwards. Only SCBD needed features are implemented. If you are looking for robust implementation to mix the two platforms please look at https://github.com/ngVue/ngVue
+
+**Update to Vue3. for vue2 please have a lokk at version 4.0.0 of this project**
+
+[Using Vue into AngularJS](#using-vue-into-angularjs)
 
 # Using Vue into AngularJS
 
 Why another angular to vue:
 - Seamless / Transparent integration
-- Use natural VueJS syntax. (`v-bind:my-prop="..."` or `:my-prop="..."`) and event (`v-on:my-event="..."` / `@my-event="..."`) on bridged component
-- Possibility to use [local registration of components](https://vuejs.org/v2/guide/components-registration.html#Local-Registration-in-a-Module-System) without having to register them globally (not need to call `Vue.component('myComponent', {...})`)
-- No need to register created a wrapper directives or use a special elements (eg: `<vue-component />`) to use vue components
+- Use natural VueJS syntax. (`v-bind:my-prop="myAngularExpression"` or `:my-prop="myAngularExpression"`) and event (`v-on:my-event="myAngularFunction($event)"` / `@my-event="myAngularFunction($event)"`) on bridged component
+- Possibility to use [local registration of components](https://vuejs.org/guide/components/registration#local-registration.html#Local-Registration-in-a-Module-System) without having to register them globally (not need to call `Vue.component('myComponent', {...})`)
 - No need to change the code of a component when angular parent component/view is migrated to VueJs...  component props/event binding remain unchanged
 
 *This documentation is incomplete*
 
 ## How it works
 
-**angularVue** Use non interfering helper directives (`ng-vue` & `ng-vue-expose`) on the root of the Vue section in the angular partial/templates. 
+**angularVue** Use non interfering helper directives (`ng-vue`) on the root of the Vue section/component in the angular partial/templates. 
+
+## Getting started
+
+```javascript
+const { NgVueDirective } = AngularVue;
+
+const ngApp = angular.module("app",[...])
+
+ngApp.directive('ngVue',  NgVueDirective); //Register ng-vue directive
+
+angular.bootstrap(document, [ngApp.name]);   
+
+```
 
 ### The `ng-vue` directive
 
-When this directive attribute is present on a html element it becomes managed by Vue (becomes a vue component). At this stage, AngularJS directive, binding and interpolation is disabled and VueJs take over. You cannot use any angular directives on this element and its descendent anymore. The `ng-vue` directive will automatically expose angular properties present in `v-bind:` and `v-on:` attributes value if they use simple format `myProps` `contact.firstName`. `ng-vue` do not detect binding in interpolation syntax eg: `{{ contact.firstName }}` you need to declare them using `ng-vue-expose` 
+When this directive attribute is present on a html element it becomes managed by Vue (becomes a vue component). At this stage, AngularJS directive, binding and interpolation is disabled and VueJs take over. You cannot use any angular directives on this element and its descendent anymore. The `ng-vue` directive will bridge/evaluate angularJs expression in the prop/event attribute value and pass it to the named props defined using `v-bind:` (`:`) and `v-on:` (`@`). In another term the left part of the html attribute binding is the property name in vue world and the right part is the angular expression evaluated using angular `$eval()` on the current scope.
+eg:
 
-### The `ng-vue-expose` attribute 
+```html
+<div ng-vue :name="ngContact.firstName">{{name}}</div>
+```
+in the above example `name` is the props name that vue use to expose the angular `ngContact.firstName` expression. While it's not exactly this you can see it as a computed property.
 
-`ng-vue-expose` goes along with `ng-vue`. It contains a comma separated value that list all angular properties & delegates that need to be exposed to Vue component (if cannot be detect by the simple binding). `ng-vue-expose="myProp1,myProp2,&myDelegate"`. delegates in `ng-vue-expose` must be prefixed by `&` (angular inspiration!);
-
+```javascript
+const name = computed(()=>$eval($scope, 'ngContact.firstName'));
+```
 
 ```html
 <div ng-app="app">
     <div ng-controller="MyController">
-        <h1>Hello from {{ngWorld}}</h1>
-        <h1 ng-vue ng-vue-expose="vueWorld" >Hello from {{vueWorld}}</h1>
-        <button ng-vue ng-vue-expose="vueWorld,&alert" :click="alert('Hello from'+vueWorld)">click me</button>
+        <h1>My name from angular is {{nameInAngular}}</h1>
+        <h1 ng-vue :name-in-vue="nameInAngular" >
+          My name from angular is {{nameInVue}}
+        </h1>
     </div>
 </div>
 ```
 
 ```javascript
-const app = angular.module('app', ['angularVue'])
+const { NgVueDirective } = AngularVue;
+
+const app = angular.module('app')
+  .directive('ngVue',  NgVueDirective); //Register ng-vue directive
   .controller('MyController', function ($scope) {
-    $scope.ngWorld  = "Angular";
+    $scope.nameInAngular  = "stephane";
     $scope.vueWorld = "Vue";
-    $scope.alert = function(msg) {
-        alert(msg)
-    }
-  });
-```
+  })
 
-Auto detect binding from `v-bind:`, v-bind short hand `:m-props`, `v-model`, `v-html`, `v-text`, `v-show`, `v-class`, `v-attr`, `v-style`, `v-if`. 
-```html
-    <h1 ng-vue v-text="vueWorld" :></h1>
 ```
-
 
 ## Vue Options 
 
-You can pass *Vue host wrapper* component options ot the `ngVue` attribute. Options must be object where key/value will be assigned on *Vue host wrapper*. It allows user to pass additional parameters to the component definition object of the Vue host. Eg: you can use `ngVue` to passe locally registered components to the vue host 
+You can pass *Vue host wrapper* `components` options ot the `ngVue` attribute. Options must be object where key/value will be assigned on *Vue host wrapper*. It allows user to pass additional parameters to the component definition object of the Vue host. Eg: you can use `ngVue` to passe locally registered components to the vue host 
 
 ```html
-<hello ng-vue="{ components : myVueLocallyDefinedComponents }"></hello>
+<hello ng-vue="{ components : myLocallyDefinedComponents }"></hello>
 ```
+the expression `{ components : myLocallyDefinedComponents }` will be evaluated using angular $eval()
 
 ```javascript
-myVueLocallyDefinedComponents = { hello : MyHelloComponent };
+$scope.myLocallyDefinedComponents = { hello : MyHelloComponent };
 ```
-
-Following properties are blacklisted:
-
-- props
-- data
-- computed
-- methods
-- watch
-
-Lifecycle hooks can be passed but the behavior is not tested yet (no angularjs $apply()/$digest()):
-
-- beforeCreate
-- created
-- beforeMount
-- mounted
-- beforeUpdate
-- updated
-- beforeDestroy
-- destroyed
-   
 
 ## Component registation
 
- You can register a component globally 
+** TODO NOT IMPLEMENTED YET **
+
+Vue3 requires you to register global component on each app. Using `ng-vue` create mutiple independate app you have to register a component globally using a wrapper function `registerComponent`.
+
 
 ```html
 <greeting ng-vue :contact="contact"></greeting>
 ```
 ```javascript
-Vue.component("greeting", {
+const { registerComponent } = AngularVue; 
+
+registerComponent("greeting", {
     props: [ 'contact' ],
     template: `<b> Hello {{contact.firstName}} {{contact.lastName}}!!<b>`
-})
+});
 
 $scope.contact: {
     firstName : "Stephane"
@@ -108,7 +110,7 @@ $scope.contact: {
 
 ```
 
-Or locally using `ngVue` `.components`
+Otherwise locally using `ngVue` `.components`
 
 ```html
 <hello ng-vue="{ components : myLocalComponents }" :contact="contact"></hello>
@@ -133,7 +135,7 @@ $scope.contact: {
 You can pass angular variable to ng-vue components using `props`. Like on Vue `props` are one-way binding
 
 ```html
-<hello ng-vue :first-name="contact.firstName", :last-name="contact.lastName" ng-vue-options="vueOptions"></hello>
+<hello ng-vue="vueOptions" :first-name="contact.firstName", :last-name="contact.lastName"></hello>
 ```
 ```javascript
 // Local component
@@ -149,12 +151,12 @@ $scope.contact: {
 }
 ```
 
-But you can make props two-way binding using props `.sync` modifiers and emitting the good `update:prop` event.
+But you can make props two-way binding using props `v-model:prop-name`. modifiers and emitting the good `update:prop` event. `.sync` is deprecated. 
 
 ```html
 <!-- only first-name wil be two-way bound -->
 
-<hello ng-vue :first-name.sync="contact.firstName", :last-name="contact.firstName" ng-vue-options="vueOptions"></hello>
+<hello ng-vue="vueOptions" v-model:first-name="contact.firstName", :last-name="contact.firstName"></hello>
 ```
 ```javascript
 // Local component
@@ -181,31 +183,49 @@ $scope.contact: {
 
 ## Plugins
 
-Since the objective of the library is help run VueJS in a `hybrid` mode lot of VueJS features may not be available for eg. `vueRouter`, to overcome that plugins were introduced so that certain features from AngularJS can be sent to VueJS in object form to be further used in vue components. The intention of plugin is to create wrapper object of the features currently not available in vue due to the hybrid limitation for eg, create wrapper object of `router` so that if the component is moved to pure VueJS project minimal changes will be required for the switch. In situation where the wrapper object is not required plain angularJs objects can be passed using the `angular-vue-plain-plugin`
+Since the objective of the library is help run VueJS in a `hybrid` mode lot of VueJS features may not be available for eg. `vueRouter`, to overcome that plugins were introduced so that certain features from AngularJS can be sent to VueJS in object form to be further used in vue components. The intention of plugin is to create wrapper object of the features currently not available in vue due to the hybrid limitation for eg, create wrapper object of `router` so that if the component is moved to pure VueJS project minimal changes will be required for the switch. In situation where the wrapper object is not required plain angularJs objects can be passed using the `createService` plugin
 
 # example usage
-```
-app.run(["realm", "locale", '$injector', function (realm, locale, $injector) {
+```javascript
+const { 
+  registerPlugin,
+  createNgVue,
+  createAuth,
+  createRouter,
+  createRoute,
+  createService
+  NgVueDirective 
+} = AngularVue;
 
-  registerVuePlugin('$realm', realm);
-  registerVuePlugin('$locale', locale);
+const ngApp = angular.module("app",['ngRoute'])
 
-  window.Vue.use(new AngularVueRoutePlugin ($injector));
-  window.Vue.use(new AngularVueRouterPlugin($injector));
+ngApp.directive('ngVue',  NgVueDirective); //Register ng-vue directive
 
+ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
+    $routeProvider.when('/', {});
+    $routeProvider.when('/updated', {});
+    $routeProvider.when('/updated/:count', {});
 }]);
 
-function registerVuePlugin(name, service){
-  const newPlugin = new CreateAngularVuePlug(name, service)
-  window.Vue.use(newPlugin);
-}
+ngApp.run(['$injector', 'realm', 'locale', ($injector, realm, locale) => {
+
+    const ngVue = createNgVue({ $injector, ngApp });
+
+    registerPlugin(ngVue);
+    registerPlugin(createAuth({ }));
+    registerPlugin(createRouter({ plugins: { ngVue } }));
+    registerPlugin(createRoute( { plugins: { ngVue } }));
+    registerPlugin(createService('$realm', realm));
+    registerPlugin(createService('$locale', locale));
+}]);
 ```
 
 # Know problems
 
 **MANY MANY MANY**
 
-- Delegate must be bounded as root property `@click="clicked()"`. Dot is not supported eg: ``@click="ctrl.clicked()"``
+** TODO TO REVIEW **
+
 - You cannot pass `$property` from angular-to-vue. (eg `$index` from `ngRepeat`) you have to reassign them using `ngInit`
 - Not well taking advantage of the reactive framework. `.sync` modifier push value up to angular that push it back down to vue component (double trigger).   / overuse of angular `$watch`
 - `ng-vue` directive only look at the root element to detect simple binding. Should browse the element tree 
@@ -221,21 +241,19 @@ The `vue-ng` component is wrapped around html to allow usage of angular stuff in
 Angular vue special plugins is required to be used. The plugin require *runtime* agularjs `$injector` instance to work.
 
 ```javascript
-const vueApp =  new Vue({}); // Vue app root!;
+const { 
+  registerPlugin,
+  createNgVue,
+} = AngularVue;
+
 const ngApp  =  angular.module("app",[...])
 
+ngApp.directive('ngVue',  NgVueDirective); //Register ng-vue directive
+
 ngApp.run(['$injector', function($injector){
-    Vue.use(new AngularVuePlugin({ 
-        $injector, // mandatory
-        ngApp,     // optional, for future use
-        vueApp     // optional, allow vue inside angular to have parent component set!
-    }), 
-    { //install options
-        vueNgName:  null // optional, define component name global registered. Default: `VueNg`;
-    });
+    registerPlugin(createNgVue({ $injector, ngApp }));
 }]);
 
-vueApp.$mount('#app');
 angular.bootstrap(document, [ngApp.name]);   
 
 ```
@@ -270,6 +288,8 @@ My name from Vue is stored in myNameInVue = {{myNameInVue}}
 
 Or do two-way binding
 
+** TODO TO REVIEW **
+
 ```html  
 My name from Vue is stored in myNameInVue = {{myNameInVue}}
 <vue-ng :my-name-in-angular.sync="myNameInVue">
@@ -292,7 +312,7 @@ My name from Vue is: {{name}}
 
         My name from Angular (inside vue) is: {{name}}
 
-        <div ng-vue ng-view-expose="name">
+        <div ng-vue :name="name">
 
            My name from Vue (inside Angular (inside Vue)) is: {{name}}
 
