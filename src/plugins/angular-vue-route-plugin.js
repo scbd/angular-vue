@@ -57,7 +57,6 @@ class AngularVueRoutePlugin {
       query,
       params
     };
-    console.log('updateRoute', this.#routeRef.value);
   }
 
   get fullPath () { return this.#routeRef.value.fullPath; }
