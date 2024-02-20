@@ -93,17 +93,18 @@ export default [function () {
 
       managedAttrs.forEach(a => rootTemplateElement.setAttributeNode(a));
 
-      const vm = createApp({
+      const app = createApp({
         template: rootTemplateElement.outerHTML,
         setup () {
           return { instance, ...wrapperDatas, ...wrapperMethods, componentDefinition };
         }
       });
 
-      installPlugins(vm);
+      installPlugins(app);
 
       if (isDebug) {
         console.debug('component template:\n', componentElement.outerHTML);
+        console.debug('local components:\n', components);
         console.debug('app root template:\n', rootTemplateElement.outerHTML);
       }
 
@@ -111,7 +112,7 @@ export default [function () {
 
       cleanElement(mountingPointElement); // remove all attributes and inner content;
 
-      vm.mount(mountingPointElement); // mount the app
+      app.mount(mountingPointElement); // mount the app
     }
   };
 }];

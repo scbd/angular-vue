@@ -1,5 +1,7 @@
 ** DOCUMENTATION IS INCOMPLETE AND NOT UP-TO-DATE NEED REVIEW**
 
+@see examples/index.html
+
 # SCBD angularVue (Vue3)
 
 The goal of this library is to help SCBD to migrate away from AngularJS by allowing VueJs component to be use into the AngularJS world (hoping) without having to change code afterwards. Only SCBD needed features are implemented. If you are looking for robust implementation to mix the two platforms please look at https://github.com/ngVue/ngVue

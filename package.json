@@ -41,6 +41,7 @@
     "@rollup/plugin-babel": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "lodash-es": "^4.17.21",
+    "nodemon": "^3.0.3",
     "rollup": "^2.79.1",
     "semistandard": "^17.0.0",
     "snazzy": "^9.0.0",
@@ -53,8 +54,5 @@
     "globals": [
       "angular"
     ]
-  },
-  "dependencies": {
-    "nodemon": "^3.0.3"
   }
 }

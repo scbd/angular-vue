@@ -11,12 +11,12 @@ class PlainServicePlugin {
 
   install (app) {
     app.provide(`plainService_${this.#name}`, this.#service);
-    app.config.globalProperties[this.#name] = this;
+    app.config.globalProperties[this.#name] = this.#service;
   }
 }
 
 export function createService (name, service) {
-  return PlainServicePlugin(name, service);
+  return new PlainServicePlugin(name, service);
 }
 
 export function useService (name) {
