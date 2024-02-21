@@ -19,12 +19,24 @@
 
                     <input ng-model="ngMessage"> {{ngMessage}}
 
-                    <div class="vue-box" ng-vue v-model:click-count="clickCount">
+                    <div class="vue-box" ng-vue ng-vue-debug v-model:click-count="vBindValues.clickCount">
                         Current route: {{$route}}
                         <button type="button" @click="$router.push({ path: `/updated/${++clickCount}`})">Update route</button>
                     </div>
 
-                    <div class="vue-box" ng-vue ng-vue-debug :message.sync="ngMessage" >
+                    <div class="vue-box" ng-vue ng-vue-debug v-bind="vBindValues" :message.sync="ngMessage">
+                        v-bind ==> props: 
+                        <pre>vueVersion: {{vueVersion}}</pre> 
+                        <pre>aCustomValue: {{aCustomValue}}</pre> 
+                        <pre>clickCount: {{clickCount}}</pre> 
+                        <pre>$props: {{$props}}</pre> 
+                    </div>
+                    <div class="ng-box">
+                        vBindValues: 
+                        <pre>{{vBindValues|json}}</pre>
+                    </div>
+
+                    <div class="vue-box" ng-vue :message.sync="ngMessage" >
                         message.sync <input v-model="message"> {{message}} (.sync should warn in console )
                     </div>
 
@@ -162,7 +174,6 @@
             $scope.components = { testVue3 };
             
             $scope.vueVersion = Vue.version;
-            $scope.clickCount = 0;
 
             $scope.ngContacts = [{
                 firstName: 'stephane',
@@ -171,6 +182,12 @@
                 firstName: 'blaise',
                 lastName: 'fonseca'
             }]
+
+            $scope.vBindValues = { 
+                vueVersion: Vue.version,
+                aCustomValue: "this is from v-bind",
+                clickCount: 0
+            }
 
             $scope.ngMessage = "Test";
 

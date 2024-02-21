@@ -13,7 +13,6 @@ class AngularVueRoutePlugin {
     this.#rootScope.$on('$routeUpdate', () => this.#updateRoute());
     this.#rootScope.$on('$routeChangeSuccess', () => this.#updateRoute());
 
-    console.log('this.#route', this.#route);
     if (!this.#route.current) { // initial route (at boot time)
       const cancelWatch = this.#rootScope.$watch(() => this.#route.current, (currentRoute) => {
         if (currentRoute === undefined) return;

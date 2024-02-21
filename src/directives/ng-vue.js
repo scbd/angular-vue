@@ -1,5 +1,7 @@
 import camelCase from 'lodash-es/camelCase';
 import kebabCase from 'lodash-es/kebabCase';
+import flatten from 'lodash-es/flatten';
+import compact from 'lodash-es/compact';
 import { installPlugins } from '../plugins/registry';
 import { createApp, ref, computed, watch, defineComponent } from 'vue';
 
@@ -38,7 +40,7 @@ export default [function () {
           if (isDebug) console.debug(`ng(${expression}) => vue(${name})):`, n);
 
           data.value = n;
-        });
+        }, true);
 
         if (hasUpdateEvent(name, attributes)) {
           prop.set = (v) => { data.value = v; };
@@ -74,11 +76,22 @@ export default [function () {
       // Create rendering component which will be boudn to named props.
 
       const componentElement = cloneElement(mountingPointElement, { attributes: false });
+      const propNames = compact(flatten(managedAttrs.map(attr => {
+        const name = toVueName(attr.name);
+
+        if (name === 'vBind') {
+          const value = wrapperDatas[attr.value].value;
+          return Object.keys(value);
+        }
+
+        return name;
+      })));
 
       unmanagedAttrs.filter(attr => attr.name !== 'ng-vue').forEach(attr => componentElement.setAttributeNode(attr));
 
       const componentDefinition = defineComponent({
         components,
+        props: propNames,
         template: componentElement.outerHTML,
         setup () {
           return { ...props };
@@ -122,7 +135,7 @@ function isManaged (attrName) {
 }
 
 function isBinding (attrName) {
-  return /^(:|v-model:|v-model$|v-bind:)/.test(attrName);
+  return /^(:|v-model:|v-model$|v-bind:|v-bind$)/.test(attrName);
 }
 
 function isEvent (attrName) {
