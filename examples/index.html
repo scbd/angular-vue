@@ -9,6 +9,34 @@
         "vue"     : "https://cdn.jsdelivr.net/npm/vue@3.4.15/dist/vue.esm-browser.js"
     } }
   </script>
+  <style>
+    .ng-box::before, [ng-vue]::before {
+        display: block;
+        font-size: 200%;
+        font-weight: bold;
+    }
+    
+    .ng-box::before  {
+        content: 'AngularJs';
+    }
+
+    [ng-vue]::before  {
+        content: 'Vue';
+    }
+
+    .ng-box  {
+        border:solid 3px red;
+    }
+    [ng-vue]  {
+        border:solid 3px green;
+    }
+
+    .ng-box, [ng-vue] {
+        padding: 5px; 
+        margin: 5px;
+    }
+</style>
+
 </head>
   <body >
     <div>
@@ -19,119 +47,54 @@
 
                     <input ng-model="ngMessage"> {{ngMessage}}
 
-                    <div class="vue-box" ng-vue ng-vue-debug v-model:click-count="vBindValues.clickCount">
-                        Current route: {{$route}}
-                        <button type="button" @click="$router.push({ path: `/updated/${++clickCount}`})">Update route</button>
-                    </div>
+                    <test-trigger ng-vue :message="ngMessage" @alert="alert($event)"></test-trigger>
 
-                    <div class="vue-box" ng-vue ng-vue-debug v-bind="vBindValues" :message.sync="ngMessage">
-                        v-bind ==> props: 
-                        <pre>vueVersion: {{vueVersion}}</pre> 
-                        <pre>aCustomValue: {{aCustomValue}}</pre> 
-                        <pre>clickCount: {{clickCount}}</pre> 
-                        <pre>$props: {{$props}}</pre> 
-                    </div>
-                    <div class="ng-box">
-                        vBindValues: 
-                        <pre>{{vBindValues|json}}</pre>
-                    </div>
+                    <test-input  ng-vue v-model="ngMessage"></test-input>
 
-                    <div class="vue-box" ng-vue :message.sync="ngMessage" >
-                        message.sync <input v-model="message"> {{message}} (.sync should warn in console )
-                    </div>
+                    <test-input ng-vue v-model="vBindValues.message"></test-input>
 
-                    <div class="vue-box" ng-vue v-model:message="ngMessage" >
-                        v-model:message <input v-model="message"> {{message}} 
-                    </div>
-                    <div class="vue-box" ng-vue :message="ngMessage" >
-                        message
-                        <input v-model="message"> {{message}} (one-way should throw exception)
-                    </div>
-                    <div class="vue-box" ng-vue :message.sync="ngMessage" >
-                        <input v-model="message"> {{message}}
+                    {{vBindValues.message}}
 
-                        <span v-if="message">
-                        <vue-ng  :ng-Value="message">
-                            <div class="ng-box"  v-pre>
-                                this code run in angular!
-                                The value passed to Angular is {{ngValue}}
-                            </div>
-                        </vue-ng>
-                        </span>
-                    </div>
+                    <table width="100%">
+                        <tr>
+                            <td> 
+                                <test-v-bind ng-vue ng-vue-debug v-bind="vBindValues"></test-v-bind>
+                            </td>
+                            <td>
+                                <div class="ng-box">
+                                <pre>{{vBindValues|json}}</pre>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
 
-                    <h3>using v-model</h3>
-                    <test-vue3 class="vue-box" ng-vue="{ components }" v-model="ngMessage" @message="alert($event)"></test-vue3>
+                    <test-router ng-vue v-model:click-count="vBindValues.clickCount"></test-router>
 
-                    <h3>using :modelValue/update:modelValue</h3>
-                    <test-vue3 class="vue-box" ng-vue="{ components }" :model-value="ngMessage" @update:model-value="ngMessage = $event" @message="alert($event)"></test-vue3>
+                    
 
-                    <h2>contact</h2>
-                    <div ng-Repeat="ctc in ngContacts">
-                        <div class="vue-box" ng-vue :index="$index" :first-name.sync="ctc.firstName" :last-name.sync="ctc.lastName" >
-                            {{index}} {{firstName}} {{lastName}}<br>
-                            <input v-model="firstName">
-                            <input v-model="lastName">
-                        </div>
-                    </div>
-                    <div class="vue-box" ng-vue :first-name-1.sync="ngContacts[0].firstName" :first-name-2.sync="ngContacts[1].firstName" >
-                        [0]<input v-model="firstName1"> + 
-                        [1]<input v-model="firstName2"> = 
-                        <span v-if="`${firstName1} ${firstName2}`=='febina blaise'">❤️</span>
-                        <span v-else-if="`${firstName1} ${firstName2}`=='febina stephane'"> 😤 => 🤜🏽🤓</span>
-                        <span v-else>💔</span>
-
-                    </div>
-                    <div class="vue-box" ng-vue :name="ngContacts[0].firstName+' '+ngContacts[0].lastName" >
-                        {{name}}
-                    </div>
-
-                    <pre>{{ngContacts|json}}</pre>
-
-                    <div class="vue-box" ng-vue ng-vue-expose="ngMessage,&alert">
-                        ng-vue-expose warning
-                    </div>
                 </div>
         </div>
     </div>
 
-    <style>
-        .ng-box::before  {
-            content: 'AngularJs';
-        }
-        .vue-box::before  {
-            content: 'Vue';
-        }
-        .ng-box::before, .vue-box::before  {
-            display: block;
-            font-size: 200%;
-            font-weight: bold;
-        }
-
-        .ng-box  {
-            border:solid 3px red;
-        }
-        .vue-box  {
-            border:solid 3px green;
-        }
-
-        .ng-box, .vue-box {
-            padding: 5px; 
-            margin: 5px;
-        }
-    </style>
 
     <script type="module">
 
-        import * as Vue from 'vue'    
+        import { version as vueVersion, reactive }from 'vue'    
         import { 
-            registerPlugin,
+            pluginRegistry,
+            compomentRegistry,
             createNgVue,
             createAuth,
             createRouter,
             createRoute, 
             NgVueDirective 
         }     from '../dist/esm/index.js'     
+
+        import testTrigger from './components/trigger.js';
+        import testInput   from './components/input.js';
+        import testVBind   from './components/v-bind.js';
+        import testRouter  from './components/router.js';
+
 
         const ngApp = angular.module("app",['ngRoute'])
 
@@ -147,33 +110,25 @@
 
             const ngVue = createNgVue({ $injector, ngApp });
 
-            registerPlugin(ngVue);
-            registerPlugin(createAuth({ }));
-            registerPlugin(createRouter({ plugins: { ngVue } }));
-            registerPlugin(createRoute( { plugins: { ngVue } }));
-        }]);
+            pluginRegistry
+                .use(ngVue)
+                .use(createAuth({ }))
+                .use(createRouter({ plugins: { ngVue } }))
+                .use(createRoute( { plugins: { ngVue } }));
 
-        var testVue3 = {
-            template:`<div><button @click="trigger(internalMsg)">Send Alert!</button><input v-model="internalMsg">(vue 3)</div>`,
-            props: {
-                modelValue: String
-            },
-            computed: {
-                internalMsg : {
-                    get()  { return this.modelValue },
-                    set(v) { this.$emit(`update:modelValue`, v) }
-                }
-            },
-            methods:{
-                trigger(v){ this.$emit('message', v)}
-            }
-        }
+            compomentRegistry
+                .component('testInput',   testInput)
+                .component('testTrigger', testTrigger)
+                .component('testVBind',   testVBind)
+                .component('testRouter',  testRouter)
+        }]);
+       
         
         ngApp.controller('MyNgController', function($scope){
 
-            $scope.components = { testVue3 };
+            //$scope.components = { testVue3, testInput };
             
-            $scope.vueVersion = Vue.version;
+            $scope.vueVersion = vueVersion;
 
             $scope.ngContacts = [{
                 firstName: 'stephane',
@@ -183,11 +138,13 @@
                 lastName: 'fonseca'
             }]
 
-            $scope.vBindValues = { 
-                vueVersion: Vue.version,
-                aCustomValue: "this is from v-bind",
-                clickCount: 0
-            }
+            $scope.vBindValues = reactive({ 
+                vueVersion: vueVersion,
+                message: "Message in v-bind",
+                clickCount: 0,
+                aPropValue: "should be display",
+                aNonPropValue: 'should not be display'
+            });
 
             $scope.ngMessage = "Test";
 

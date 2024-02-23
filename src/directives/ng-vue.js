@@ -1,9 +1,8 @@
 import camelCase from 'lodash-es/camelCase';
 import kebabCase from 'lodash-es/kebabCase';
-import flatten from 'lodash-es/flatten';
-import compact from 'lodash-es/compact';
-import { installPlugins } from '../plugins/registry';
-import { createApp, ref, computed, watch, defineComponent } from 'vue';
+import isPlainObject from 'lodash-es/isPlainObject';
+import { installPlugins, installComponents } from '../plugins/registry';
+import { createApp, shallowRef, toRef, isReactive, defineComponent } from 'vue';
 
 export default [function () {
   return {
@@ -16,45 +15,31 @@ export default [function () {
 
       const wrapperDatas = {}; // ng => vue intermedia reactive data holder.
       const wrapperMethods = {}; // vuw => ng intermedia event handler.
-      const props = {}; // locally defined props
-      const instance = ref(null); // instanciated compment that is unsed to emit events
+      const instance = shallowRef(null); // instanciated compment that is unsed to emit events
 
       const attributes = getNormalizedAttributes(mountingPointElement); // get a copy of the normalized attributes
       const managedAttrs = attributes.filter(attr => isManaged(attr.name));
-      const unmanagedAttrs = attributes.filter(attr => !isManaged(attr.name));
 
       // Create data wrapper for managed binding (v-bind: / v-model)
       managedAttrs.filter(attr => isBinding(attr.name)).forEach(attr => {
         const name = bindingName(attr.name);
         const expression = attr.value;
 
-        const data = ref($scope.$eval(expression));
-        const prop = {
-          get: () => data.value,
-          set: (v) => { throw Error(`Prop is not set for two-way binding. Please use v-model:${toAttrName(name)}`); }
-        };
+        const ngValue = warnIfNonReactive($scope.$eval(expression), `${attr.name}="${attr.value}"`);
+        const data = toRef(ngValue);
 
         $scope.$watch(expression, (n, o) => {
           if (n === o) return;
-
           if (isDebug) console.debug(`ng(${expression}) => vue(${name})):`, n);
 
-          data.value = n;
+          data.value = warnIfNonReactive(n, `ng(${expression}) => vue(${name})): ${n}`);
         }, true);
-
-        if (hasUpdateEvent(name, attributes)) {
-          prop.set = (v) => { data.value = v; };
-
-          watch(data, (n, o) => {
-            if (n === o) return;
-            instance.value.$emit(`update:${name}`, n);
-          });
-        }
 
         attr.value = `ngDataWrapper_${camelCase(name)}`;
 
+        if (isDebug) console.debug(`Binding prop : ng(${expression}) => vue(${name})`);
+
         wrapperDatas[attr.value] = data;
-        props[name] = computed(prop);
       });
 
       // Create event wrapper for managed events (v-on:)
@@ -64,8 +49,10 @@ export default [function () {
 
         attr.value = `ngEventWrapper_${camelCase(name)}`;
 
+        if (isDebug) console.debug(`Binding event: vue(${name}) => ng(${expression})`);
+
         wrapperMethods[attr.value] = ($event) => {
-          if (isDebug) console.debug(`vue(${name}) => ng(${expression}) -`, '$event:', $event);
+          if (isDebug) console.debug(`emit: vue(${name}) => ng(${expression}) -`, '$event:', $event);
 
           $scope.$apply(() => {
             $scope.$eval(`${expression}`, { $event });
@@ -76,26 +63,10 @@ export default [function () {
       // Create rendering component which will be boudn to named props.
 
       const componentElement = cloneElement(mountingPointElement, { attributes: false });
-      const propNames = compact(flatten(managedAttrs.map(attr => {
-        const name = toVueName(attr.name);
-
-        if (name === 'vBind') {
-          const value = wrapperDatas[attr.value].value;
-          return Object.keys(value);
-        }
-
-        return name;
-      })));
-
-      unmanagedAttrs.filter(attr => attr.name !== 'ng-vue').forEach(attr => componentElement.setAttributeNode(attr));
 
       const componentDefinition = defineComponent({
         components,
-        props: propNames,
-        template: componentElement.outerHTML,
-        setup () {
-          return { ...props };
-        }
+        template: componentElement.outerHTML
       });
 
       // create app route component which will be bound to event/data wrapper
@@ -104,7 +75,7 @@ export default [function () {
       rootTemplateElement.setAttribute('ref', 'instance'); // set the ref to locale variable `instance` where the instanciate component will be accesble from.
       rootTemplateElement.setAttribute(':is', 'componentDefinition'); // set component variable name to load the definition from.
 
-      managedAttrs.forEach(a => rootTemplateElement.setAttributeNode(a));
+      attributes.forEach(a => rootTemplateElement.setAttributeNode(a));
 
       const app = createApp({
         template: rootTemplateElement.outerHTML,
@@ -114,6 +85,7 @@ export default [function () {
       });
 
       installPlugins(app);
+      installComponents(app);
 
       if (isDebug) {
         console.debug('component template:\n', componentElement.outerHTML);
@@ -156,11 +128,6 @@ function eventName (attrName) {
   return toVueName(name);
 }
 
-function hasUpdateEvent (name, attributes) {
-  const attrName = toAttrName(`v-on:update:${name}`);
-  return !!attributes.find(attr => attr.name.startsWith(attrName));
-}
-
 function toAttrName (name) {
   return name.replace(/[^:.@]+/g, kebabCase);
 }
@@ -182,7 +149,11 @@ function getNormalizedAttributes (element) {
   const clonedElement = cloneElement(element);
 
   [...clonedElement.attributes].forEach(attr => {
-    if (/^ng-vue-expose/.test(attr.name)) {
+    if (/^ng-vue-debug/.test(attr.name)) {
+      clonedElement.removeAttributeNode(attr);
+    }
+
+    if (/^ng-vue-expose/.test(attr.name)) { // Migration vue2=>vue3: DROPPED
       const epressions = attr.value.split(',');
 
       const newAttrs = epressions.map(prop => {
@@ -224,7 +195,7 @@ function getNormalizedAttributes (element) {
       const expr = attr.value;
       let modifiers = getModifiers(attr.name);
 
-      if (/\.sync/.test(modifiers)) {
+      if (/\.sync/.test(modifiers)) { // Migration vue2=>vue3: WARNING
         console.warn(`use of .sync is deprecated. Use v-model:${toAttrName(name)} instead for \n${element.outerHTML}`);
         modifiers = modifiers.replace(/\.sync/, '');
       }
@@ -275,4 +246,16 @@ function removeAttributes (element) {
 function cleanElement (element) {
   removeAttributes(element);
   element.innerHTML = '';
+}
+
+function warnIfNonReactive (v, context) {
+  let warn = true; // SHOUDL WARN ON DEV ONLY
+
+  warn = warn && typeof (v) === 'object';
+  warn = warn && isPlainObject(v);
+  warn = warn && !isReactive(v);
+
+  if (warn) console.warn('Plain Object passed to props should be defined \'reactive() in angular\' if you want to track its properties value changes', context);
+
+  return v;
 }
