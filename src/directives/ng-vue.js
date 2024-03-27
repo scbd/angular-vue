@@ -11,7 +11,8 @@ export default [function () {
     priority: 1001, // 1 more than ngNonBindable => disable angular interpolation!
     link ($scope, [mountingPointElement], attrs) {
       const isDebug = attrs.ngVueDebug !== undefined;
-      const { components } = $scope.$eval(attrs.ngVue || '{}'); // managed option that is directly passed to component definition
+
+      const { components, setup } = $scope.$eval(attrs.ngVue || '{}'); // managed option that is directly passed to component definition
 
       const wrapperDatas = {}; // ng => vue intermedia reactive data holder.
       const wrapperMethods = {}; // vuw => ng intermedia event handler.
@@ -66,7 +67,10 @@ export default [function () {
 
       const componentDefinition = defineComponent({
         components,
-        template: componentElement.outerHTML
+        template: componentElement.outerHTML,
+        setup (props, context) {
+          if (setup) return setup(props, context);
+        }
       });
 
       // create app route component which will be bound to event/data wrapper

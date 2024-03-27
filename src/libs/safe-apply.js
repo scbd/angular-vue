@@ -2,8 +2,8 @@ export default function safeApply ($scope, fn) {
   const phase = $scope.$root.$$phase;
 
   if (phase === '$apply' || phase === '$digest') {
-    fn();
+    return fn();
   } else {
-    $scope.$apply(fn);
+    return $scope.$apply(fn);
   }
 }

@@ -68,6 +68,17 @@
                         </tr>
                     </table>
 
+                    <table width="100%">
+                        <tr>
+                            <td> 
+                                <test-inject ng-vue="{ setup: myInjectSetupFunction }"></test-inject>
+                            <td>
+                                <test-inject ng-vue="{ setup: myInjectSetupFunction2 }"></test-inject>
+                            </td>
+                        </tr>
+                    </table>
+
+
                     <test-router ng-vue v-model:click-count="vBindValues.clickCount"></test-router>
 
                     
@@ -79,7 +90,7 @@
 
     <script type="module">
 
-        import { version as vueVersion, reactive }from 'vue'    
+        import { version as vueVersion, reactive, provide } from 'vue'    
         import { 
             pluginRegistry,
             compomentRegistry,
@@ -90,11 +101,12 @@
             NgVueDirective 
         }     from '../dist/esm/index.js'     
 
+        import safeApply  from '../../src/libs/safe-apply.js';
         import testTrigger from './components/trigger.js';
         import testInput   from './components/input.js';
         import testVBind   from './components/v-bind.js';
         import testRouter  from './components/router.js';
-
+        import testInject  from './components/inject.js';
 
         const ngApp = angular.module("app",['ngRoute'])
 
@@ -121,6 +133,7 @@
                 .component('testTrigger', testTrigger)
                 .component('testVBind',   testVBind)
                 .component('testRouter',  testRouter)
+                .component('testInject',  testInject)
         }]);
        
         
@@ -155,6 +168,26 @@
             $scope.alert = function(msg) {
                 alert(`${msg}`);
             }
+
+            $scope.myInjectSetupFunction = function() {
+                provide('testInject', "My injected value");
+                provide('testCallback', (msg)=>{
+                    console.log(msg);
+                    return safeApply($scope, ()=>{ 
+                        $scope.ngMessage = msg 
+                        return `>>>${msg}<<<`;
+                    });
+                });
+            }
+
+            $scope.myInjectSetupFunction2 = function() {
+                provide('testInject', { 
+                    "this" : "is", 
+                    "my" : "injected", 
+                    "object" :"!" 
+                });
+            }
+
 
             $scope.reset();
         });
