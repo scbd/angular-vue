@@ -1,5 +1,5 @@
 import { inject } from 'vue';
-import safeApply from '../libs/safe-apply';
+import { safeApply } from '../libs/angular-calls';
 
 const defaultInjectKey = 'router';
 

@@ -101,7 +101,7 @@
             NgVueDirective 
         }     from '../dist/esm/index.js'     
 
-        import safeApply  from '../../src/libs/safe-apply.js';
+        import { safeDelegate } from '../../src/libs/angular-calls.js';
         import testTrigger from './components/trigger.js';
         import testInput   from './components/input.js';
         import testVBind   from './components/v-bind.js';
@@ -171,13 +171,12 @@
 
             $scope.myInjectSetupFunction = function() {
                 provide('testInject', "My injected value");
-                provide('testCallback', (msg)=>{
+                provide('testCallback', safeDelegate($scope, (msg)=>{
                     console.log(msg);
-                    return safeApply($scope, ()=>{ 
-                        $scope.ngMessage = msg 
-                        return `>>>${msg}<<<`;
-                    });
-                });
+
+                    $scope.ngMessage = msg 
+                    return `>>>${msg}<<<`;
+                }));
             }
 
             $scope.myInjectSetupFunction2 = function() {

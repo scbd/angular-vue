@@ -1,5 +1,5 @@
 import camelCase from 'lodash-es/camelCase';
-import safeApply from '../libs/safe-apply';
+import { safeApply } from '../libs/angular-calls';
 import renderVNodeToDomElement from '../libs/render-v-node-to-dom-element';
 import { h, shallowRef } from 'vue';
 
