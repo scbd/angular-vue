@@ -10,13 +10,13 @@
     } }
   </script>
   <style>
-    .ng-box::before, [ng-vue]::before {
+    .ng-isolate-scope::before, .ng-box::before, [ng-vue]::before {
         display: block;
         font-size: 200%;
         font-weight: bold;
     }
     
-    .ng-box::before  {
+    .ng-isolate-scope::before, .ng-box::before  {
         content: 'AngularJs';
     }
 
@@ -24,16 +24,22 @@
         content: 'Vue';
     }
 
-    .ng-box  {
+    .ng-isolate-scope, .ng-box  {
         border:solid 3px red;
+        padding: 3px;
     }
     [ng-vue]  {
         border:solid 3px green;
+        padding: 3px;
     }
 
     .ng-box, [ng-vue] {
         padding: 5px; 
         margin: 5px;
+    }
+
+    d-customer {
+        display: block;
     }
 </style>
 
@@ -72,8 +78,23 @@
                         <tr>
                             <td> 
                                 <test-inject ng-vue="{ setup: myInjectSetupFunction }"></test-inject>
-                            <td>
+                            </td>
+                            <td> 
                                 <test-inject ng-vue="{ setup: myInjectSetupFunction2 }"></test-inject>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table width="100%">
+                        <tr>
+                            <td> 
+                                <test-customer ng-vue></test-customer>
+                            </td>
+                            <td>
+                                <d-customer customer="ngContacts[1]" callback="alert($event)"></d-customer>
+                                <div class="ng-box">
+                                    {{ ngContacts}}
+                                </div>
                             </td>
                         </tr>
                     </table>
@@ -102,15 +123,19 @@
         }     from '../dist/esm/index.js'     
 
         import { safeDelegate } from '../../src/libs/angular-calls.js';
-        import testTrigger from './components/trigger.js';
-        import testInput   from './components/input.js';
-        import testVBind   from './components/v-bind.js';
-        import testRouter  from './components/router.js';
-        import testInject  from './components/inject.js';
+        import testTrigger  from './components/trigger.js';
+        import testInput    from './components/input.js';
+        import testVBind    from './components/v-bind.js';
+        import testRouter   from './components/router.js';
+        import testInject   from './components/inject.js';
+        import testCustomer from './components/customer.js';
+
+        import ngCustomer   from './directives/customer.js';
 
         const ngApp = angular.module("app",['ngRoute'])
 
-        ngApp.directive('ngVue',  NgVueDirective)
+        ngApp.directive('ngVue',  NgVueDirective);
+        ngApp.directive('dCustomer',  ngCustomer);
 
         ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
             $routeProvider.when('/', {});
@@ -134,6 +159,7 @@
                 .component('testVBind',   testVBind)
                 .component('testRouter',  testRouter)
                 .component('testInject',  testInject)
+                .component('testCustomer',testCustomer)
         }]);
        
         

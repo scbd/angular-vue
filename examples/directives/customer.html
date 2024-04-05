@@ -1,0 +1,14 @@
+
+<div>
+    <div>
+        <label>First Name</label>
+        <input ng-model="customer.firstName">
+    </div>
+    <div>
+        <label>Last Name</label>
+        <input ng-model="customer.lastName">
+    </div>
+
+    <button type="button" ng-click="callbackFn({ $event:  customer.firstName+' '+customer.lastName})">OnClick!</button>
+    
+</div>
