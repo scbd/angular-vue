@@ -1,55 +1,69 @@
 import camelCase from 'lodash-es/camelCase';
 
-const registeredPlugins = [];
+//= =========================================
+//= =========================================
+//= =========================================
+const plugins = [];
+const components = [];
+const directives = [];
 
 export function registerPlugin (plugin, options) {
   if (!plugin) throw Error('pluging is null');
   if (!plugin.install) throw Error('pluging has no install function');
-  if (registeredPlugins.find(o => o.plugin === plugin)) throw Error('pluging already registered');
+  if (plugins.find(o => o.plugin === plugin)) throw Error('pluging already registered');
 
-  registeredPlugins.push({ plugin, options });
+  plugins.push({ plugin, options });
 }
-
-export function installPlugins (app) {
-  if (!app) throw Error('app is null');
-
-  registeredPlugins.forEach(({ plugin, options }) => {
-    app.use(plugin, options);
-  });
-}
-
-const registerComponents = {};
 
 export function registerComponent (name, component) {
   name = camelCase(name || '');
 
   if (!name) throw Error('Component name not set');
   if (!component) throw Error('Component not set');
-  if (registerComponents[name]) throw Error(`Component with same name already registered: ${name}`);
+  if (components[name]) throw Error(`Component with same name already registered: ${name}`);
 
-  registerComponents[name] = component;
+  components[name] = component;
 }
 
-export function installComponents (app) {
+function registerDirectives (name, directive) {
+  name = camelCase(name || '');
+
+  if (!name) throw Error('Directive name not set');
+  if (!directive) throw Error('Directive not set');
+  if (directives[name]) throw Error(`Directive with same name already registered: ${name}`);
+
+  directives[name] = directive;
+}
+
+export function install (app) {
   if (!app) throw Error('app is null');
 
-  Object.entries(registerComponents).forEach(([name, component]) => {
+  plugins.forEach(({ plugin, options }) => {
+    app.use(plugin, options);
+  });
+
+  Object.entries(components).forEach(([name, component]) => {
     app.component(name, component);
+  });
+
+  Object.entries(directives).forEach(([name, directive]) => {
+    app.directive(name, directive);
   });
 }
 
-export const pluginRegistry = {
-
+export default {
   use (plugin, options) {
     registerPlugin(plugin, options);
     return this;
-  }
-};
-
-export const compomentRegistry = {
+  },
 
   component (name, component) {
     registerComponent(name, component);
+    return this;
+  },
+
+  directive (name, component) {
+    registerDirectives(name, component);
     return this;
   }
 };

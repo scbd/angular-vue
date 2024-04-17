@@ -1,16 +1,20 @@
-import isFunction from 'lodash-es/isFunction';
-import camelCase from 'lodash-es/camelCase';
+import { parseAttrs } from '../libs/vue-attrs';
 import { safeApply } from '../libs/angular-calls';
 import renderVNodeToDomElement from '../libs/render-v-node-to-dom-element';
-import { h, shallowRef } from 'vue';
+import { shallowRef } from 'vue';
+
+// NOT FULLY FUNCTIONNAL
+// NOT FULLY FUNCTIONNAL
+// NOT FULLY FUNCTIONNAL
+// NOT FULLY FUNCTIONNAL
+// NOT FULLY FUNCTIONNAL
+// NOT FULLY FUNCTIONNAL
 
 export default {
   setup () {
     return { ngScope: shallowRef(null) };
   },
-  render () {
-    return h(null, 'angular placeholder');
-  },
+  render () { },
   mounted () {
     const { $ngVue, $attrs, $el } = this;
 
@@ -54,7 +58,7 @@ export default {
 
         console.debug(`vue(ng): vue <= ng (${ngName})`, v);
 
-        vueHandler(v);
+        return vueHandler(v);
       });
     });
 
@@ -65,7 +69,7 @@ export default {
       $scope[ngName] = ($event) => {
         console.debug(`vue(ng): vue <= ng emit:${ngName}`, '$event =', $event);
 
-        vueHandler($event);
+        return vueHandler($event);
       };
     });
 
@@ -91,38 +95,3 @@ export default {
     }
   }
 };
-
-function parseAttrs ($attrs) {
-  const isPropSync = /^onUpdate:/;
-  const isEvent = /^on[A-Z]/;
-
-  let entries = Object.entries($attrs);
-
-  // Starts with are props sync (v-model:) which are all starting with `onUpdate:`
-  const propsSync = entries.filter(([attrKey]) => isPropSync.test(attrKey)).map(([attrKey, vueHandler]) => ({
-    attrKey,
-    ngName: attrKey.replace(isPropSync, ''),
-    vueHandler
-  }));
-
-  entries = entries.filter(([attrKey]) => !propsSync.find(o => o.attrKey === attrKey)); // exclude propsSync;
-
-  // Continue with events which are all starting with `on` and have fandler
-
-  const events = entries.filter(([attrKey, vueHandler]) => isEvent.test(attrKey) && isFunction(vueHandler)).map(([attrKey, vueHandler]) => ({
-    attrKey,
-    ngName: camelCase(attrKey.replace(/^on/, '')),
-    vueHandler
-  }));
-
-  entries = entries.filter(([attrKey]) => !events.find(o => o.attrKey === attrKey)); // exclude events;
-
-  // Remainings are props
-  const props = entries.map(([attrKey, vueValue]) => ({
-    attrKey,
-    ngName: attrKey,
-    vueValue
-  }));
-
-  return { props, propsSync, events };
-}
