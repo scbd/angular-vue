@@ -91,7 +91,7 @@
                                 <test-customer ng-vue></test-customer>
                             </td>
                             <td>
-                                <d-customer customer="ngContacts[1]" callback="alert($event)"></d-customer>
+                                <d-customer customer="ngContacts[1]" callback="alert($event);" is-ok="ngContacts[1].firstName=='blaise'" click-count="vBindValues.clickCount" ></d-customer>
                                 <div class="ng-box">
                                     {{ ngContacts}}
                                 </div>
@@ -113,14 +113,14 @@
 
         import { version as vueVersion, reactive, provide } from 'vue'    
         import { 
-            pluginRegistry,
-            compomentRegistry,
+            VueRegistry,
             createNgVue,
             createAuth,
             createRouter,
             createRoute, 
-            NgVueDirective 
+            NgVueDirective,
         }     from '../dist/esm/index.js'     
+
 
         import { safeDelegate } from '../../src/libs/angular-calls.js';
         import testTrigger  from './components/trigger.js';
@@ -147,13 +147,11 @@
 
             const ngVue = createNgVue({ $injector, ngApp });
 
-            pluginRegistry
+            VueRegistry
                 .use(ngVue)
                 .use(createAuth({ }))
                 .use(createRouter({ plugins: { ngVue } }))
-                .use(createRoute( { plugins: { ngVue } }));
-
-            compomentRegistry
+                .use(createRoute( { plugins: { ngVue } }))
                 .component('testInput',   testInput)
                 .component('testTrigger', testTrigger)
                 .component('testVBind',   testVBind)

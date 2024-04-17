@@ -1,7 +1,7 @@
 import camelCase from 'lodash-es/camelCase';
 import kebabCase from 'lodash-es/kebabCase';
 import isPlainObject from 'lodash-es/isPlainObject';
-import { installPlugins, installComponents } from '../plugins/registry';
+import { install } from '../plugins/registry';
 import { createApp, shallowRef, toRef, isReactive, defineComponent } from 'vue';
 
 export default [function () {
@@ -88,8 +88,7 @@ export default [function () {
         }
       });
 
-      installPlugins(app);
-      installComponents(app);
+      install(app);
 
       if (isDebug) {
         console.debug('component template:\n', componentElement.outerHTML);

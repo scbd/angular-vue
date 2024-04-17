@@ -1,26 +1,39 @@
-
 export default {
     template:
         `<div>
   <h5> vvv this is vue vvv</h5>
-  client: {{ client }}
+  <div>client: {{ client }}</div>
+  <div>clickCount: {{ clickCount }}</div>
+  <div>isOk: {{ isOk }}</div>
+  <div>clickCount: <input v-model="clickCount" type="number"></div>
   
-  <h5> vvv this is angular vvv</h5>
-  <vue-ng :myVueToNgMappedName="client" @theMappedFunctionName="myAlert($event)">
-      <d-customer v-pre customer="myVueToNgMappedName" callback="theMappedFunctionName($event)"></d-customer>
-  </vue-ng>
+  <h5> vvv this is angular using :click-count="clickCount" vvv</h5>
+  <d-customer v-vue-ng :customer="client" @callback="myAlert($event)" :is-ok="(clickCount%2)!=0" :click-count="clickCount"></d-customer>
+
+  <h5> vvv this is angular using v-model:click-count="clickCount" vvv</h5>
+  <d-customer v-vue-ng :customer="client" @callback="myAlert($event)" :is-ok="(clickCount%2)!=0" v-model:click-count="clickCount"></d-customer>
+
 </div>
 `,
 
+
     data: () => ({
+        clickCount : 0,
         client: {
             firstName : 'my',
             lastName  : 'name'
         }
     }),
+    computed: {
+        isOk() { return this.clickCount%2!=0 }
+    },
     methods: {
         myAlert(msg) {
+            this.clickCount++;
             alert(msg)
+        },
+        myVueIsOk() {
+            return this.clickCount%2!=0;
         }
     }
 }
