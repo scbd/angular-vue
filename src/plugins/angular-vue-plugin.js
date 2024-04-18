@@ -1,7 +1,6 @@
 import { shallowRef, inject } from 'vue';
 import kebabCase from 'lodash-es/kebabCase';
 import VueNgDirective from '../directives/vue-ng';
-// import AngularVueComponent from '../components/vue-ng'; // DISABLED NOT FULLY FUNCTIONNAL
 const defaultInjectKey = 'ngVue';
 
 class AngularVuePlugin {
@@ -23,7 +22,6 @@ class AngularVuePlugin {
 
     app.provide(defaultInjectKey, this);
     app.directive(kebabCase(vueNgName || 'VueNg'), VueNgDirective);
-    // app.component(kebabCase(vueNgName || 'VueNg'), AngularVueComponent); // DISABLED NOT FULLY FUNCTIONNAL
 
     app.config.globalProperties.$ngVue = this;
   }

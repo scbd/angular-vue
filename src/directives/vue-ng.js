@@ -1,5 +1,12 @@
 import { parseAttrs } from '../libs/vue-attrs';
 import { safeApply } from '../libs/angular-calls';
+import { kebabCase } from 'lodash-es';
+
+const RestrictTo = {
+  element: 'E',
+  attribute: 'A',
+  class: 'C'
+};
 
 export default {
   created,
@@ -19,52 +26,71 @@ function created (el, { instance }) {
 //
 //= ============================================
 function mounted (el, binding, vnode) {
+  const { dynamicProps } = vnode;
   const { instance } = binding;
   const { $ngVue } = instance;
   const { $injector } = $ngVue;
+
+  let restrictTo = RestrictTo.element; // see `restrict` https://docs.angularjs.org/guide/directive
+
+  if (binding.modifiers.c) restrictTo = RestrictTo.class;
+  if (binding.modifiers.a) restrictTo = RestrictTo.attribute;
+
+  const directiveName = kebabCase(binding.arg || el.tagName);
+  const tagName = restrictTo === 'E' ? directiveName : kebabCase(el.tagName);
+
   const $parentScope = angular.element(el).parents('.ng-scope:first')?.scope() || $injector.get('$rootScope');
+  const $scope = $parentScope.$new(true); // create new isolated scope!
 
-  const $ngScope = $parentScope.$new(true); // create new isolated scope!
+  const { props, events } = parseAttrs(vnode.props);
 
-  const ngTemplate = el.cloneNode(true); // clone the el placeholder
+  const template = document.createElement(tagName);
 
-  const { props, propsSync, events } = parseAttrs(vnode.props);
+  if (restrictTo === RestrictTo.attribute) template.setAttribute(directiveName, '');
+  if (restrictTo === RestrictTo.class) template.setAttribute('class', directiveName);
 
-  props.forEach(({ attrName, ngName, vueValue }) => {
-    $ngScope[ngName] = vueValue;
-    ngTemplate.attributes[attrName].value = ngName;
+  props.forEach(({ attrKey, attrName, ngName, value, handler }) => {
+    if (!template.hasAttribute(attrName)) template.setAttribute(attrName, value);
+
+    if (!dynamicProps.includes(attrKey)) return;
+
+    template.attributes[attrName].value = ngName;
+
+    $scope[ngName] = value;
+
+    if (handler) $scope.$watch(ngName, handler); // 2 way binding
   });
 
-  propsSync.forEach(({ ngName, vueHandler }) => {
-    $ngScope.$watch(ngName, vueHandler);
-  });
-
-  events.forEach(({ attrName, ngName, vueHandler }) => {
-    $ngScope[ngName] = ($event) => vueHandler($event);
-    ngTemplate.setAttribute(attrName, `${ngName}($event)`);
+  events.forEach(({ attrName, ngName, handler }) => {
+    $scope[ngName] = ($event) => handler($event);
+    template.setAttribute(attrName, `${ngName}($event)`);
   });
 
   const $compile = $injector.get('$compile');
-  const bindFn = $compile(ngTemplate);
-  const [$ngElement] = bindFn($ngScope); // Bind to scope
+  const bindFn = $compile(template);
+  const [$ngElement] = bindFn($scope); // Bind to scope
 
   // Replace this component wrapper (el) in the browser DOM with the angular one (ngElement)
   el.parentElement.replaceChild($ngElement, el);
 
   // Attach to other `el` as el will be passed to other event handler;
-  el.$ngScope = $ngScope;
+  el.$ngScope = $scope;
   el.$ngElement = $ngElement;
 }
 
 //= ============================================
 //
 //= ============================================
-function updated ({ $ngScope }, binding, vnode) {
-  const $ngProps = parseAttrs(vnode.props);
+function updated ({ $ngScope: $scope }, binding, vnode) {
+  const { dynamicProps } = vnode;
+  const { props } = parseAttrs(vnode.props);
 
-  safeApply($ngScope, () => {
-    $ngProps.props.forEach(({ ngName, vueValue }) => {
-      $ngScope[ngName] = vueValue;
+  safeApply($scope, () => {
+    props.forEach(({ attrKey, ngName, value }) => {
+      if (!dynamicProps.includes(attrKey)) return;
+      if ($scope[ngName] === value) return;
+
+      $scope[ngName] = value;
     });
   });
 }
@@ -72,8 +98,8 @@ function updated ({ $ngScope }, binding, vnode) {
 //= ============================================
 //
 //= ============================================
-function unmounted ({ $ngElement, $ngScope }) {
-  console.debug('v-ng: destroying ng-scope', $ngScope);
-  $ngScope.$destroy();
+function unmounted ({ $ngElement, $ngScope: $scope }) {
+  console.debug('v-ng: destroying ng-scope', $scope);
+  $scope.$destroy();
   $ngElement.remove();
 }
