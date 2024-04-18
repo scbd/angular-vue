@@ -8,34 +8,27 @@ export function parseAttrs ($attrs) {
 
   let entries = Object.entries($attrs);
 
-  // Starts with are props sync (v-model:) which are all starting with `onUpdate:`
-  const propsSync = entries.filter(([attrKey]) => isPropSync.test(attrKey)).map(([attrKey, vueHandler]) => ({
-    attrKey,
-    attrName: kebabCase(attrKey.replace(/^^onUpdate:/, '')),
-    ngName: attrKey.replace(isPropSync, ''),
-    vueHandler
-  }));
+  // starts with events
 
-  entries = entries.filter(([attrKey]) => !propsSync.find(o => o.attrKey === attrKey)); // exclude propsSync;
-
-  // Continue with events which are all starting with `on` and have fandler
-
-  const events = entries.filter(([attrKey, vueHandler]) => isEvent.test(attrKey) && isFunction(vueHandler)).map(([attrKey, vueHandler]) => ({
+  const events = entries.filter(([attrKey, handler]) => isEvent.test(attrKey) && isFunction(handler)).map(([attrKey, handler]) => ({
     attrKey,
     attrName: kebabCase(attrKey.replace(/^on/, '')),
     ngName: camelCase(attrKey.replace(/^on/, '')),
-    vueHandler
+    handler
   }));
 
   entries = entries.filter(([attrKey]) => !events.find(o => o.attrKey === attrKey)); // exclude events;
+  entries = entries.filter(([attrKey]) => !isPropSync.test(attrKey)); // exclude onUpdate: properties;
 
   // Remainings are props
-  const props = entries.map(([attrKey, vueValue]) => ({
+
+  const props = entries.map(([attrKey, value]) => ({
     attrKey,
     attrName: kebabCase(attrKey),
     ngName: camelCase(attrKey),
-    vueValue
+    handler: $attrs[`onUpdate:${camelCase(attrKey)}`],
+    value
   }));
 
-  return { props, propsSync, events };
+  return { props, events };
 }

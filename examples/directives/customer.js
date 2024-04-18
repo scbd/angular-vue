@@ -1,12 +1,13 @@
 
 export default ['$location', ($location)=> ({
-    restrict: 'E',
+    restrict: 'EAC',
     templateUrl: '/examples/directives/customer.html',
     scope: {
         customer: '=customer',
         callbackFn: '&callback',
         isOk: '&isOk',
-        clickCount: '=clickCount'
+        clickCount: '=clickCount',
+        placeholder: '@placeholder'
     },
     link: function(scope) {
 
