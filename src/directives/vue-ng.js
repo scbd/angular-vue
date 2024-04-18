@@ -1,69 +1,71 @@
 import { parseAttrs } from '../libs/vue-attrs';
 import { safeApply } from '../libs/angular-calls';
-import { kebabCase } from 'lodash-es';
-
-const RestrictTo = {
-  element: 'E',
-  attribute: 'A',
-  class: 'C'
-};
+import { kebabCase, isString, camelCase } from 'lodash-es';
 
 export default {
   created,
   mounted,
-  updated,
+  beforeUpdate,
   unmounted
 };
 
 //= ============================================
 //
 //= ============================================
-function created (el, { instance }) {
-  if (!instance?.$ngVue) throw new Error('AngularVuePlugin not installed');
+function created (el, { instance }, vnode) {
+  if (!instance.$ngVue) throw new Error('AngularVuePlugin not installed');
 }
 
 //= ============================================
 //
 //= ============================================
 function mounted (el, binding, vnode) {
-  const { dynamicProps } = vnode;
   const { instance } = binding;
   const { $ngVue } = instance;
   const { $injector } = $ngVue;
 
-  let restrictTo = RestrictTo.element; // see `restrict` https://docs.angularjs.org/guide/directive
-
-  if (binding.modifiers.c) restrictTo = RestrictTo.class;
-  if (binding.modifiers.a) restrictTo = RestrictTo.attribute;
-
-  const directiveName = kebabCase(binding.arg || el.tagName);
-  const tagName = restrictTo === 'E' ? directiveName : kebabCase(el.tagName);
-
   const $parentScope = angular.element(el).parents('.ng-scope:first')?.scope() || $injector.get('$rootScope');
   const $scope = $parentScope.$new(true); // create new isolated scope!
 
-  const { props, events } = parseAttrs(vnode.props);
+  const directiveName = camelCase(binding.arg || el.tagName);
+  const [directiveDef] = $injector.get(`${camelCase(directiveName)}Directive`);
+  const { restrict } = directiveDef; // see `restrict` https://docs.angularjs.org/guide/directive
+
+  const tagName = restrictTo(restrict) === 'E' ? kebabCase(directiveName) : kebabCase(el.tagName);
 
   const template = document.createElement(tagName);
 
-  if (restrictTo === RestrictTo.attribute) template.setAttribute(directiveName, '');
-  if (restrictTo === RestrictTo.class) template.setAttribute('class', directiveName);
+  if (restrictTo(restrict) === 'A') template.setAttribute(directiveName, '');
+  if (restrictTo(restrict) === 'C') template.setAttribute('class', directiveName);
 
-  props.forEach(({ attrKey, attrName, ngName, value, handler }) => {
-    if (!template.hasAttribute(attrName)) template.setAttribute(attrName, value);
+  const $ngProps = parseNgProps(directiveDef.scope || {});
+  const { props, events } = parseAttrs(vnode.props);
 
-    if (!dynamicProps.includes(attrKey)) return;
+  props.forEach(({ attrName, ngName, value, handler }) => {
+    if (!template.hasAttribute(attrName)) template.setAttribute(attrName, toString(value));
 
-    template.attributes[attrName].value = ngName;
+    const ngAttr = template.attributes[attrName];
+    const { isBinding } = $ngProps[ngName] || {};
 
-    $scope[ngName] = value;
+    if (!isBinding) return;
 
-    if (handler) $scope.$watch(ngName, handler); // 2 way binding
+    const scopeName = `vueDataWrapper_${ngName}`;
+
+    $scope[scopeName] = value;
+    ngAttr.value = scopeName;
+
+    if (handler) $scope.$watch(scopeName, handler); // 2 way binding
   });
 
   events.forEach(({ attrName, ngName, handler }) => {
-    $scope[ngName] = ($event) => handler($event);
-    template.setAttribute(attrName, `${ngName}($event)`);
+    const { isDelegate } = $ngProps[ngName] || {};
+
+    if (!isDelegate) return;
+
+    const scopeName = `vueEventWrapper_${ngName}`;
+
+    $scope[scopeName] = ($event) => handler($event);
+    template.setAttribute(attrName, `${scopeName}($event)`);
   });
 
   const $compile = $injector.get('$compile');
@@ -75,22 +77,26 @@ function mounted (el, binding, vnode) {
 
   // Attach to other `el` as el will be passed to other event handler;
   el.$ngScope = $scope;
+  el.$ngProps = $ngProps;
   el.$ngElement = $ngElement;
 }
 
 //= ============================================
 //
 //= ============================================
-function updated ({ $ngScope: $scope }, binding, vnode) {
-  const { dynamicProps } = vnode;
+function beforeUpdate (el, binding, vnode) {
+  const { $ngScope: $scope, $ngProps } = el;
   const { props } = parseAttrs(vnode.props);
 
   safeApply($scope, () => {
-    props.forEach(({ attrKey, ngName, value }) => {
-      if (!dynamicProps.includes(attrKey)) return;
-      if ($scope[ngName] === value) return;
+    props.forEach(({ ngName, value }) => {
+      const { isBinding } = $ngProps[ngName] || {};
+      const scopeName = `vueDataWrapper_${ngName}`;
 
-      $scope[ngName] = value;
+      if (!isBinding) return;
+      if ($scope[scopeName] === value) return;
+
+      $scope[scopeName] = value;
     });
   });
 }
@@ -102,4 +108,45 @@ function unmounted ({ $ngElement, $ngScope: $scope }) {
   console.debug('v-ng: destroying ng-scope', $scope);
   $scope.$destroy();
   $ngElement.remove();
+}
+
+//= ============================================
+//
+//= ============================================
+function parseNgProps (scope) {
+  const prefixRe = /^(=|&|@|)/;
+  const bindingRe = /^=/;
+  const attrRe = /^@/;
+  const delegateRe = /^&/;
+
+  const entries = Object.entries(scope);
+
+  return entries.reduce((res, [key, value]) => {
+    const name = camelCase(value.replace(prefixRe, '') || key);
+
+    return {
+      ...res,
+      [name]: {
+        isBinding: bindingRe.test(value),
+        isAttr: attrRe.test(value),
+        isDelegate: delegateRe.test(value)
+      }
+    };
+  }, {});
+}
+
+function restrictTo (restrict) {
+  if (/E/.test(restrict)) return 'E';
+  if (/A/.test(restrict)) return 'A';
+  if (/C/.test(restrict)) return 'C';
+
+  throw new Error(`Unknown dicrectin 'restrict' ${restrict}`);
+}
+
+function toString (v) {
+  if (v === undefined) v = '';
+  if (v === null) v = '';
+  if (!isString(v)) v = JSON.stringify(v);
+
+  return v;
 }

@@ -6,7 +6,7 @@ export function parseAttrs ($attrs) {
   const isPropSync = /^onUpdate:/;
   const isEvent = /^on[A-Z]/;
 
-  let entries = Object.entries($attrs);
+  let entries = Object.entries($attrs).filter(([attrKey]) => !isPropSync.test(attrKey)); // exclude onUpdate: properties;;
 
   // starts with events
 
@@ -18,7 +18,6 @@ export function parseAttrs ($attrs) {
   }));
 
   entries = entries.filter(([attrKey]) => !events.find(o => o.attrKey === attrKey)); // exclude events;
-  entries = entries.filter(([attrKey]) => !isPropSync.test(attrKey)); // exclude onUpdate: properties;
 
   // Remainings are props
 
