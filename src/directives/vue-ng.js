@@ -114,10 +114,11 @@ function unmounted ({ $ngElement, $ngScope: $scope }) {
 //
 //= ============================================
 function parseNgProps (scope) {
-  const prefixRe = /^(=|&|@|)/;
-  const bindingRe = /^=/;
-  const attrRe = /^@/;
-  const delegateRe = /^&/;
+  // https://docs.angularjs.org/api/ng/service/$compile#-scope-
+  const prefixRe = /^(<|=|&|@|)/;
+  const bindingRe = /^[<=]\??/;
+  const attrRe = /^@\??/;
+  const delegateRe = /^&\??/;
 
   const entries = Object.entries(scope);
 
