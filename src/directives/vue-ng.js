@@ -1,13 +1,9 @@
 import { parseAttrs } from '../libs/vue-attrs';
 import { safeApply } from '../libs/angular-calls';
-import { kebabCase, isString, camelCase } from 'lodash-es';
-
-export default {
-  created,
-  mounted,
-  beforeUpdate,
-  unmounted
-};
+import kebabCase from 'lodash-es/kebabCase';
+import camelCase from 'lodash-es/camelCase';
+import isString from 'lodash-es/isString';
+import isObject from 'lodash-es/isObject';
 
 //= ============================================
 //
@@ -24,9 +20,6 @@ function mounted (el, binding, vnode) {
   const { $ngVue } = instance;
   const { $injector } = $ngVue;
 
-  const $parentScope = angular.element(el).parents('.ng-scope:first')?.scope() || $injector.get('$rootScope');
-  const $scope = $parentScope.$new(true); // create new isolated scope!
-
   const directiveName = camelCase(binding.arg || el.tagName);
   const [directiveDef] = $injector.get(`${camelCase(directiveName)}Directive`);
   const { restrict } = directiveDef; // see `restrict` https://docs.angularjs.org/guide/directive
@@ -41,51 +34,61 @@ function mounted (el, binding, vnode) {
   const $ngProps = parseNgProps(directiveDef.scope || {});
   const { props, events } = parseAttrs(vnode.props);
 
-  props.forEach(({ attrName, ngName, value, handler }) => {
-    if (!template.hasAttribute(attrName)) template.setAttribute(attrName, toString(value));
+  const $parentScope = angular.element(el).parents('.ng-scope:first')?.scope() || $injector.get('$rootScope');
 
-    const ngAttr = template.attributes[attrName];
-    const { isBinding } = $ngProps[ngName] || {};
+  safeApply($parentScope, () => {
+    const $scope = $parentScope.$new(true); // create new isolated scope!
 
-    if (!isBinding) return;
+    props.forEach(({ attrName, ngName, value, handler }) => {
+      if (!template.hasAttribute(attrName)) template.setAttribute(attrName, toString(value));
 
-    const scopeName = `vueDataWrapper_${ngName}`;
+      const ngAttr = template.attributes[attrName];
+      const { isBinding } = $ngProps[ngName] || {};
 
-    $scope[scopeName] = value;
-    ngAttr.value = scopeName;
+      if (!isBinding) return;
 
-    if (handler) $scope.$watch(scopeName, handler); // 2 way binding
-  });
+      const scopeName = `vueDataWrapper_${ngName}`;
 
-  events.forEach(({ attrName, ngName, handler }) => {
-    const { isDelegate } = $ngProps[ngName] || {};
+      $scope[scopeName] = value;
+      ngAttr.value = scopeName;
 
-    if (!isDelegate) return;
+      if (handler) $scope.$watch(scopeName, handler); // 2 way binding
+    });
 
-    const scopeName = `vueEventWrapper_${ngName}`;
+    events.forEach(({ attrName, ngName, handler }) => {
+      const { isDelegate } = $ngProps[ngName] || {};
 
-    $scope[scopeName] = ($event) => handler($event);
-    template.setAttribute(attrName, `${scopeName}($event)`);
-  });
+      if (!isDelegate) return;
 
-  const $compile = $injector.get('$compile');
-  const bindFn = $compile(template);
-  const [$ngElement] = bindFn($scope); // Bind to scope
+      const scopeName = `vueEventWrapper_${ngName}`;
 
-  // Replace this component wrapper (el) in the browser DOM with the angular one (ngElement)
-  el.parentElement.replaceChild($ngElement, el);
+      $scope[scopeName] = ($event) => handler($event);
+      template.setAttribute(attrName, `${scopeName}($event)`);
+    });
 
-  // Attach to other `el` as el will be passed to other event handler;
-  el.$ngScope = $scope;
-  el.$ngProps = $ngProps;
-  el.$ngElement = $ngElement;
+    const $compile = $injector.get('$compile');
+    const bindFn = $compile(template);
+    const [$ngElement] = bindFn($scope); // Bind to scope
+
+    // Replace this component wrapper (el) in the browser DOM with the angular one (ngElement)
+    el.parentElement.replaceChild($ngElement, el);
+
+    // Attach to other `el` as el will be passed to other event handler;
+    el.$ngScope = $scope;
+    el.$ngProps = $ngProps;
+    el.$ngElement = $ngElement;
+  }); // Force update
 }
 
 //= ============================================
 //
 //= ============================================
 function beforeUpdate (el, binding, vnode) {
-  const { $ngScope: $scope, $ngProps } = el;
+  const $scope = el?.$ngScope;
+
+  if (!$scope) return;
+
+  const $ngProps = el?.$ngProps || {};
   const { props } = parseAttrs(vnode.props);
 
   safeApply($scope, () => {
@@ -104,10 +107,24 @@ function beforeUpdate (el, binding, vnode) {
 //= ============================================
 //
 //= ============================================
-function unmounted ({ $ngElement, $ngScope: $scope }) {
-  console.debug('v-ng: destroying ng-scope', $scope);
-  $scope.$destroy();
-  $ngElement.remove();
+function beforeUnmount (el) {
+  const $ngElement = el?.$ngElement;
+
+  if ($ngElement && $ngElement.parentElement) { // put back original htmlElemnet to unmount
+    $ngElement.parentElement.replaceChild(el, $ngElement);
+    delete el.$ngElement;
+  }
+}
+
+//= ============================================
+//
+//= ============================================
+function unmounted (el) {
+  const $scope = el?.$ngScope;
+
+  if ($scope) {
+    safeApply($scope, () => $scope.$destroy());
+  }
 }
 
 //= ============================================
@@ -151,3 +168,21 @@ function toString (v) {
 
   return v;
 }
+
+function debugHook (message, handler) {
+  return (el, binding, vnode, prevVNode) => {
+    if (binding.modifiers.debug) { console.debug(message, el, binding, vnode, prevVNode); }
+
+    if (handler) { return handler(el, binding, vnode, prevVNode); }
+  };
+}
+
+export default {
+  created: debugHook('created', created),
+  beforeMount: debugHook('beforeMount'),
+  mounted: debugHook('mounted', mounted),
+  beforeUpdate: debugHook('beforeUpdate', beforeUpdate),
+  updated: debugHook('updated'),
+  beforeUnmount: debugHook('beforeUnmount', beforeUnmount),
+  unmounted: debugHook('unmounted', unmounted)
+};
