@@ -111,7 +111,7 @@
 
     <script type="module">
 
-        import { version as vueVersion, reactive, provide } from 'vue'    
+        import { version as vueVersion, reactive, provide, h } from 'vue'    
         import { 
             VueRegistry,
             createNgVue,
@@ -158,6 +158,7 @@
                 .component('testRouter',  testRouter)
                 .component('testInject',  testInject)
                 .component('testCustomer',testCustomer)
+                .component('ng',{ render() { return h('span'); } });
         }]);
        
         
