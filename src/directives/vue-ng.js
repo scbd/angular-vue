@@ -22,7 +22,9 @@ function mounted (el, binding, vnode) {
 
   const directiveName = camelCase(binding.arg || el.tagName);
   const [directiveDef] = $injector.get(`${camelCase(directiveName)}Directive`);
-  const { restrict } = directiveDef; // see `restrict` https://docs.angularjs.org/guide/directive
+  const { restrict, scope } = directiveDef; // see `restrict` https://docs.angularjs.org/guide/directive
+
+  if (!isObject(scope)) throw Error(`Only supporting directive.scope = {...}. Current value: ${scope}`);
 
   const tagName = restrictTo(restrict) === 'E' ? kebabCase(directiveName) : kebabCase(el.tagName);
 
@@ -158,7 +160,7 @@ function restrictTo (restrict) {
   if (/A/.test(restrict)) return 'A';
   if (/C/.test(restrict)) return 'C';
 
-  throw new Error(`Unknown dicrectin 'restrict' ${restrict}`);
+  throw new Error(`Unknown 'restrict': ${restrict}`);
 }
 
 function toString (v) {
