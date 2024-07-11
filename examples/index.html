@@ -20,7 +20,7 @@
         content: 'AngularJs';
     }
 
-    [ng-vue]::before  {
+    .vue-box::before, [ng-vue]::before  {
         content: 'Vue';
     }
 
@@ -28,7 +28,7 @@
         border:solid 3px red;
         padding: 3px;
     }
-    [ng-vue]  {
+    .vue-box, [ng-vue]  {
         border:solid 3px green;
         padding: 3px;
     }
@@ -77,6 +77,18 @@
                     <table width="100%">
                         <tr>
                             <td> 
+                                <d-pane title="NG transclude"><b>my transcluded content. ngMessage: {{ngMessage}}</b></d-pane>
+                            </td>
+                            <td>
+                                <test-transclude ng-vue :message="ngMessage"></test-transclude>
+                            </td>
+                        </tr>
+                    </table>
+
+
+                    <table width="100%">
+                        <tr>
+                            <td> 
                                 <test-inject ng-vue="{ setup: myInjectSetupFunction }"></test-inject>
                             </td>
                             <td> 
@@ -98,7 +110,6 @@
                             </td>
                         </tr>
                     </table>
-
 
                     <test-router ng-vue v-model:click-count="vBindValues.clickCount"></test-router>
 
@@ -129,13 +140,16 @@
         import testRouter   from './components/router.js';
         import testInject   from './components/inject.js';
         import testCustomer from './components/customer.js';
+        import testTransclude from './components/transclude.js';
 
         import ngCustomer   from './directives/customer.js';
+        import ngPane       from './directives/pane-transclude.js';
 
         const ngApp = angular.module("app",['ngRoute'])
 
         ngApp.directive('ngVue',  NgVueDirective);
         ngApp.directive('dCustomer',  ngCustomer);
+        ngApp.directive('dPane',  ngPane);
 
         ngApp.config(["$routeProvider", "$locationProvider", function ($routeProvider, $locationProvider) {
             $routeProvider.when('/', {});
@@ -158,7 +172,8 @@
                 .component('testRouter',  testRouter)
                 .component('testInject',  testInject)
                 .component('testCustomer',testCustomer)
-                .component('ng',{ render() { return h('span'); } });
+                .component('testTransclude', testTransclude)
+                .component('ng',{ render() { return h('span', this.$slots.default()); } });
         }]);
        
         
