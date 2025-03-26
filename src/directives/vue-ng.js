@@ -78,9 +78,9 @@ function mounted (el, binding, vnode) {
     const [$ngElement] = bindFn($scope); // Bind to scope
 
     if (transclude) {
-      // NOT THE IDEAL SOLUTION BU IT WORKS FOR BASIC ng-transclude
+      // NOT THE IDEAL SOLUTION BUT IT WORKS FOR BASIC ng-transclude
       // https://docs.angularjs.org/api/ng/directive/ngTransclude#basic-transclusion
-      // It would have been better to work with slots but bannot access them from directive
+      // It would have been better to work with slots but cannot access them from directive
       const ngTransclude = $ngElement.querySelector('ng-transclude') || $ngElement.querySelector('*[ng-transclude');
 
       if (ngTransclude) {
