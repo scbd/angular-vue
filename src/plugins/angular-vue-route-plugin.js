@@ -36,6 +36,12 @@ class AngularVueRoutePlugin {
     return $route;
   }
 
+  get #routeParams () {
+    const { $injector } = this.#ngVue;
+    const $routeParams = $injector.get('$routeParams');
+    return $routeParams;
+  }
+
   get #rootScope () {
     const { $injector } = this.#ngVue;
     const $rootScope = $injector.get('$rootScope');
@@ -47,7 +53,7 @@ class AngularVueRoutePlugin {
     const path = this.#location.path();
     const hash = this.#location.hash() ? `#${this.#location.hash()}` : '';
     const query = { ...(this.#location.search() || {}) };
-    const params = { ...(this.#route.current?.params || {}) };
+    const params = { ...(this.#routeParams||{}), ...(this.#route.current?.params || {}) };
 
     this.#routeRef.value = {
       fullPath,

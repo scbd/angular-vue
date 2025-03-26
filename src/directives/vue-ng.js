@@ -22,7 +22,7 @@ function mounted (el, binding, vnode) {
 
   const directiveName = camelCase(binding.arg || el.tagName);
   const [directiveDef] = $injector.get(`${camelCase(directiveName)}Directive`);
-  const { restrict, scope } = directiveDef; // see `restrict` https://docs.angularjs.org/guide/directive
+  const { restrict, scope, transclude } = directiveDef; // see `restrict` https://docs.angularjs.org/guide/directive
 
   if (!isObject(scope)) throw Error(`Only supporting directive.scope = {...}. Current value: ${scope}`);
 
@@ -68,9 +68,29 @@ function mounted (el, binding, vnode) {
       template.setAttribute(attrName, `${scopeName}($event)`);
     });
 
+    // for (const node of el.childNodes) {
+    //   el.removeChild(node);
+    //   template.appendChild(node);
+    // }
+
     const $compile = $injector.get('$compile');
     const bindFn = $compile(template);
     const [$ngElement] = bindFn($scope); // Bind to scope
+
+    if (transclude) {
+      // NOT THE IDEAL SOLUTION BUT IT WORKS FOR BASIC ng-transclude
+      // https://docs.angularjs.org/api/ng/directive/ngTransclude#basic-transclusion
+      // It would have been better to work with slots but cannot access them from directive
+      const ngTransclude = $ngElement.querySelector('ng-transclude') || $ngElement.querySelector('*[ng-transclude');
+
+      if (ngTransclude) {
+        if (el.childNodes.length > 1) throw new Error('only support one slot transclusion');
+
+        for (const node of el.childNodes) {
+          ngTransclude.parentElement.replaceChild(node, ngTransclude);
+        }
+      }
+    }
 
     // Replace this component wrapper (el) in the browser DOM with the angular one (ngElement)
     el.parentElement.replaceChild($ngElement, el);
